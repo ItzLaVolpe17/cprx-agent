@@ -1,0 +1,47 @@
+{
+  "id": "cprx-agent",
+  "title": "Agent — Cyberpunk RED",
+  "description": "Un Agent giocabile dentro Foundry: contatti, lavori e note salvati sul personaggio, un numero di rete per ogni Agent, messaggi e chiamate fra personaggi, e App di Black Chrome che fanno davvero qualcosa. Il giocatore proprietario e il GM possono scrivere.",
+  "version": "0.9.3",
+  "authors": [
+    {
+      "name": "Volpe"
+    }
+  ],
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12",
+    "maximum": "12"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "cyberpunk-red-core",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/agent.js"
+  ],
+  "styles": [
+    "styles/agent.css"
+  ],
+  "languages": [
+    {
+      "lang": "it",
+      "name": "Italiano",
+      "path": "lang/it.json"
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "socket": false,
+  "url": "https://example.invalid/cprx-agent",
+  "manifest": "https://example.invalid/cprx-agent/module.json",
+  "download": "https://example.invalid/cprx-agent/module.zip"
+}

@@ -1,0 +1,3440 @@
+{{!-- Il corpo del telefono. La finestra di Foundry qui non ha cornice
+      (`frame: false`), quindi il manico e il tasto di chiusura sono la
+      targhetta qui sopra: senza, la finestra non si sposta e non si chiude.
+
+      Tacca, tasti laterali e barretta sono decorazione dichiarata
+      (`aria-hidden`): servono a far sembrare un telefono quello che dentro
+      e' gia' un telefono. --}}
+<div class="agent-telefono">
+
+  <div class="agent-targhetta" data-manico>
+    <i class="fa-solid fa-mobile-screen-button"></i>
+    <span class="agent-targhetta-nome">{{nomeAttore}}</span>
+    <button type="button" class="agent-targhetta-chiudi" data-action="close"
+            title="{{localize 'CPRX.Chiudi'}}" aria-label="{{localize 'CPRX.Chiudi'}}">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <div class="agent-corpo">
+    <i class="agent-tasto-lato sinistra alto" aria-hidden="true"></i>
+    <i class="agent-tasto-lato sinistra basso" aria-hidden="true"></i>
+    <i class="agent-tasto-lato destra" aria-hidden="true"></i>
+
+{{!-- La chiave dell'App sta sulla scocca: da li' il foglio di stile da' a
+      ogni App la propria tinta e la propria testata, senza che ogni blocco
+      debba marcarsi da solo. --}}
+<div class="agent-scocca app-{{appCorrente}}">
+
+  <div class="agent-tacca" aria-hidden="true">
+    <i class="agent-tacca-capsula"></i>
+    <i class="agent-tacca-occhio"></i>
+  </div>
+
+  {{!-- Lo sfondo sta dietro tutto e non intercetta il mouse. Il velo sopra
+        non e' decorazione: senza, sulle foto chiare non si legge niente.
+
+        Si vede **solo** sulla home e sul vetro di blocco: dentro un'App
+        c'e' un'applicazione a schermo pieno, e una foto sotto un estratto
+        conto e' rumore. Il controllo e' qui e non nel CSS perche' diverse
+        App si ridisegnano il fondo dello schermo per conto loro, e ognuna
+        vincerebbe su una regola generica. --}}
+  {{#if sfondoVisibile}}
+  <div class="agent-sfondo" aria-hidden="true" style="background-image: url('{{sfondo}}')"></div>
+  <div class="agent-sfondo-velo" aria-hidden="true"></div>
+  {{/if}}
+
+  {{!-- Righe di scansione: stanno sopra a tutto e non intercettano il mouse. --}}
+  <div class="agent-vetro" aria-hidden="true"></div>
+  {{#if scanlines}}<div class="agent-spazzata" aria-hidden="true"></div>{{/if}}
+
+  <div class="agent-stato">
+    <span class="agent-ora" data-orologio>--:--</span>
+    <span class="agent-spia" aria-hidden="true"></span>
+    <span class="agent-rete">NET</span>
+    <span class="agent-os"></span>
+    {{#if gps}}<span class="agent-gps" title="{{localize 'CPRX.TracciamentoGps'}}"><i class="fa-solid fa-location-crosshairs"></i></span>{{/if}}
+    <span class="agent-tacche" aria-hidden="true"><i></i><i></i><i></i><i class="spenta"></i></span>
+    <span class="agent-batteria" aria-hidden="true"><b></b></span>
+  </div>
+
+  {{!-- La chiamata mandata in secondo piano: resta questa striscia, e da qui
+        si torna dentro. Sta fuori da ogni vista, quindi legge dal contesto
+        comune. --}}
+  {{#if chiamataBarra}}
+  <button type="button" class="agent-chiamata-striscia" data-action="chiamataApri">
+    <i class="fa-solid {{#if chiamataBarra.gruppo}}fa-users{{else}}fa-phone{{/if}}"></i>
+    <span class="agent-chiamata-striscia-nome">{{chiamataBarra.nome}}</span>
+    <span class="agent-chiamata-striscia-durata" data-durata>{{chiamataBarra.durataTesto}}</span>
+  </button>
+  {{/if}}
+
+  {{!-- Il saluto sta qui, nell'accensione: nella barra di stato veniva
+        troncato dopo tre parole e non lo leggeva nessuno. --}}
+  <div class="agent-avvio" aria-hidden="true">
+    <span class="agent-avvio-testo">{{bentornato}}</span>
+    <span class="agent-avvio-barra"></span>
+  </div>
+
+  {{!-- ====================== PRIMA ACCENSIONE ====================== --}}
+  {{!-- Un telefono nuovo chiede. Cinque passi, e ogni passo e' un pezzo di
+        una schermata che esiste gia' — Impostazioni e Casa — chiesto una
+        volta invece che lasciato da cercare.
+
+        I tasti dei temi e degli sfondi sono quelli veri: scrivono subito,
+        e qui si mostrano e basta. --}}
+  {{#if vistaSetup}}
+  <div class="agent-schermo agent-setup">
+
+    <div class="agent-setup-passi" aria-hidden="true">
+      {{#each setupPunti}}
+      <i class="agent-setup-punto {{#if this.fatto}}fatto{{/if}}"></i>
+      {{/each}}
+    </div>
+
+    {{#if setupAvvio}}
+    <div class="agent-setup-eroe">
+      <i class="fa-solid fa-mobile-screen-button"></i>
+      <span class="agent-setup-titolo">{{localize "CPRX.SetupTitolo"}}</span>
+      <span class="agent-setup-sotto">{{localize "CPRX.SetupSotto"}}</span>
+    </div>
+    <div class="agent-elenco">
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.Dispositivo"}}</span>
+        <span class="agent-riga-valore">{{modello}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.NumeroSerie"}}</span>
+        <span class="agent-riga-valore">{{seriale}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.NumeroAgent"}}</span>
+        <span class="agent-riga-valore">{{numero}}</span>
+      </div>
+    </div>
+    <p class="agent-nota">{{localize "CPRX.SetupNota"}}</p>
+    {{/if}}
+
+    {{#if setupIdentita}}
+    <h4 class="agent-sezione">{{localize "CPRX.SetupComeChiamarti"}}</h4>
+    <p class="agent-nota">{{localize "CPRX.SetupIdentitaNota"}}</p>
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.CampoHandle"}}</span>
+      <input type="text" name="handle" value="{{handle}}" placeholder="{{nomeAttore}}" />
+    </label>
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.CampoNomeVero"}}</span>
+      <input type="text" name="nomeVero" value="{{nomeVero}}" placeholder="{{nomeAttore}}" />
+    </label>
+    <label class="agent-interruttore">
+      <input type="checkbox" name="saluto" {{#unless salutoHandle}}checked{{/unless}} />
+      <span class="agent-leva"></span>
+      <span class="agent-interruttore-nome">{{localize "CPRX.SalutoColNome"}}</span>
+    </label>
+    <p class="agent-setup-anteprima">{{salutoAnteprima}}</p>
+    {{/if}}
+
+    {{#if setupAspetto}}
+    <h4 class="agent-sezione">{{localize "CPRX.Tema"}}</h4>
+    <div class="agent-temi">
+      {{#each temi}}
+      <button type="button" class="agent-tema macchia-{{this.chiave}} {{#if this.attivo}}attivo{{/if}}"
+              data-action="scegliTema" data-tema="{{this.chiave}}">
+        <span class="agent-tema-macchia"></span>
+        <span class="agent-tema-nome">{{this.etichetta}}</span>
+      </button>
+      {{/each}}
+    </div>
+
+    <h4 class="agent-sezione">{{localize "CPRX.Sfondo"}}</h4>
+    <div class="agent-sfondi">
+      {{#each sfondi}}
+      <button type="button" class="agent-sfondo-scelta {{#if this.scelto}}scelto{{/if}} {{#unless this.url}}vuoto{{/unless}}"
+              data-action="sfondo" data-sfondo="{{this.chiave}}"
+              title="{{this.etichetta}}" aria-label="{{this.etichetta}}"
+              {{#if this.url}}style="background-image: url('{{this.url}}')"{{/if}}>
+        <span class="agent-sfondo-nome">{{this.etichetta}}</span>
+        {{#if this.scelto}}<i class="fa-solid fa-check agent-sfondo-spunta"></i>{{/if}}
+      </button>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if setupCasa}}
+    <h4 class="agent-sezione">{{localize "CPRX.SetupDoveVivi"}}</h4>
+    {{#if corporativo}}
+    <p class="agent-nota agent-abbonato">
+      <i class="fa-solid fa-building"></i> {{localize "CPRX.CasaCorporativo"}}
+    </p>
+    {{else}}
+    <p class="agent-nota">{{localize "CPRX.SetupCasaNota"}}</p>
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.CasaAlloggio"}}</span>
+      <select name="alloggio">
+        {{#each alloggi}}
+        <option value="{{this.chiave}}" {{#if this.scelto}}selected{{/if}}>
+          {{this.etichetta}} — {{this.canone}} eb
+        </option>
+        {{/each}}
+      </select>
+    </label>
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.CasaVitto"}}</span>
+      <select name="vitto">
+        {{#each vitti}}
+        <option value="{{this.chiave}}" {{#if this.scelto}}selected{{/if}}>
+          {{this.etichetta}} — {{this.costo}} eb
+        </option>
+        {{/each}}
+      </select>
+    </label>
+    <div class="agent-riga-stato">
+      <span class="agent-riga-nome">{{localize "CPRX.CasaCanoneMensile"}}</span>
+      <span class="agent-riga-valore">{{totale}} eb</span>
+    </div>
+    {{/if}}
+    {{/if}}
+
+    {{#if setupDispositivo}}
+    <h4 class="agent-sezione">{{localize "CPRX.SetupDispositivo"}}</h4>
+    <label class="agent-interruttore">
+      <input type="checkbox" name="agentInterno" {{#if agentInterno}}checked{{/if}} />
+      <span class="agent-leva"></span>
+      <span class="agent-interruttore-nome">{{localize "CPRX.AgentInterno"}}</span>
+    </label>
+    <label class="agent-interruttore">
+      <input type="checkbox" name="gps" {{#if gps}}checked{{/if}} />
+      <span class="agent-leva"></span>
+      <span class="agent-interruttore-nome">{{localize "CPRX.TracciamentoGps"}}</span>
+    </label>
+    <p class="agent-nota">{{localize "CPRX.SetupDispositivoNota"}}</p>
+    {{/if}}
+
+    <div class="agent-setup-fondo">
+      {{#unless setupPrimo}}
+      <button type="button" class="agent-tasto-lungo" data-action="setupIndietro">
+        {{localize "CPRX.Indietro"}}
+      </button>
+      {{/unless}}
+      <button type="button" class="agent-cta" data-action="setupAvanti">
+        {{#if setupUltimo}}{{localize "CPRX.SetupAttiva"}}{{else}}{{localize "CPRX.Avanti"}}{{/if}}
+      </button>
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- ======================= SCHERMATA DI BLOCCO =================== --}}
+  {{#if vistaBlocco}}
+  <div class="agent-schermo agent-blocco-vetro">
+    <div class="agent-blocco-ora">
+      <span class="agent-orologione" data-orologio>--:--</span>
+      <span class="agent-blocco-data">{{dataLunga}}</span>
+    </div>
+
+    <div class="agent-blocco-chi">
+      <span class="agent-blocco-nome">{{nomeBlocco}}</span>
+      <span class="agent-blocco-riga">{{numeroMio}}</span>
+    </div>
+
+    {{#if nonLetti}}
+    <div class="agent-blocco-avviso">
+      <i class="fa-solid fa-comment-sms"></i>
+      {{localize "CPRX.MessaggiNonLetti"}} · {{nonLetti}}
+    </div>
+    {{/if}}
+
+    <button type="button" class="agent-impronta" data-action="sblocca"
+            title="{{localize 'CPRX.Sblocca'}}" aria-label="{{localize 'CPRX.Sblocca'}}">
+      <i class="fa-solid fa-fingerprint"></i>
+    </button>
+    <span class="agent-blocco-invito">{{localize "CPRX.Sblocca"}}</span>
+  </div>
+  {{/if}}
+
+  {{!-- ============================ HOME ============================ --}}
+  {{!-- Tre pagine affiancate dentro una pista che scorre in orizzontale.
+        Il contenitore non scorre mai in verticale: scorre la pagina. --}}
+  {{#if vistaHome}}
+  <div class="agent-home">
+
+    <div class="agent-vetrino">
+      <div class="agent-pista" data-pista style="transform: {{pista}}">
+
+        {{!-- ---------------------- pagina 0: quadro ---------------------- --}}
+        <div class="agent-pagina quadro {{#if paginaQuadro}}attiva{{/if}}">
+
+          <div class="agent-data">{{dataLunga}}</div>
+          <div class="agent-orologione" data-orologio>--:--</div>
+
+          <header class="agent-blocco">
+            <span class="agent-ritratto-cornice">
+              <img class="agent-ritratto" src="{{immagine}}" alt="" />
+            </span>
+            <div class="agent-blocco-testo">
+              <span class="agent-blocco-nome">{{handle}}</span>
+              <span class="agent-blocco-vero">{{nomeSotto}}</span>
+              <span class="agent-blocco-riga">{{localize "CPRX.DispositivoRegistrato"}}</span>
+            </div>
+          </header>
+
+          {{!-- Tre cifre e basta: rubrica, lavori aperti, il tuo nome sulla
+                strada. Il dispositivo sta nella pagina di sistema. --}}
+          <div class="agent-cifre">
+            {{#each conteggi}}
+            <div class="agent-cifra">
+              <span class="agent-cifra-valore">{{this.valore}}</span>
+              <span class="agent-etichetta">{{this.etichetta}}</span>
+            </div>
+            {{/each}}
+          </div>
+
+          <div class="agent-sezione-riga">
+            <span class="agent-etichetta">{{localize "CPRX.Notifiche"}}</span>
+            <span class="agent-filetto"></span>
+            {{#if nonLetti}}<span class="agent-etichetta acceso">{{nonLetti}}</span>{{/if}}
+          </div>
+
+          {{#if haNotifiche}}
+          <ul class="agent-avvisi">
+            {{#each notifiche}}
+            <li>
+              <button type="button" class="agent-avviso genere-{{this.genere}} {{#if this.nuovo}}nuovo{{/if}}"
+                      data-action="{{this.azione}}" data-app="{{this.app}}"
+                      {{#if this.scheda}}data-scheda="{{this.scheda}}"{{/if}}
+                      {{#if this.numero}}data-numero="{{this.numero}}"{{/if}}>
+                <span class="agent-avviso-icona"><i class="{{this.icona}}"></i></span>
+                <span class="agent-avviso-testo">
+                  <span class="agent-avviso-alto">
+                    <span class="agent-avviso-titolo">{{this.titolo}}</span>
+                    <span class="agent-avviso-ora">{{this.ora}}</span>
+                  </span>
+                  <span class="agent-avviso-riga">{{this.testo}}</span>
+                </span>
+              </button>
+            </li>
+            {{/each}}
+          </ul>
+          {{else}}
+          <p class="agent-vuoto">{{localize "CPRX.NessunaNotifica"}}</p>
+          {{/if}}
+        </div>
+
+        {{!-- ------------------- pagina 1: applicazioni ------------------- --}}
+        <div class="agent-pagina {{#if paginaApp}}attiva{{/if}}" data-pagina-indice="1">
+          <div class="agent-sezione-riga">
+            <span class="agent-etichetta">{{localize "CPRX.Applicazioni"}}</span>
+            <span class="agent-filetto"></span>
+            <span class="agent-etichetta">{{quanteApp}}</span>
+          </div>
+
+          {{!-- La classe `app-<chiave>` non e' decorativa: da li' la
+                mattonella prende la tinta dell'App, dallo stesso blocco che
+                la da' alla scocca quando l'App si apre. --}}
+          <div class="agent-griglia">
+            {{#each app}}
+            <button type="button" class="agent-icona app-{{this.chiave}}"
+                    data-action="apriApp" data-app="{{this.chiave}}">
+              <span class="agent-icona-piastra"><i class="{{this.icona}}"></i></span>
+              <span class="agent-icona-nome">{{this.etichetta}}</span>
+              {{#if this.conteggio}}<span class="agent-pallino">{{this.conteggio}}</span>{{/if}}
+            </button>
+            {{/each}}
+
+            {{#each installate}}
+            <button type="button" class="agent-icona app-{{this.chiave}}"
+                    data-action="apriApp" data-app="{{this.chiave}}">
+              <span class="agent-icona-piastra"><i class="{{this.icona}}"></i></span>
+              <span class="agent-icona-nome">{{this.etichetta}}</span>
+            </button>
+            {{/each}}
+          </div>
+        </div>
+
+        {{!-- ---------------- pagina 2: rete e sistema -------------------- --}}
+        <div class="agent-pagina {{#if paginaSistema}}attiva{{/if}}" data-pagina-indice="2">
+          <div class="agent-sezione-riga">
+            <span class="agent-etichetta">{{localize "CPRX.ReteSistema"}}</span>
+            <span class="agent-filetto"></span>
+          </div>
+
+          <div class="agent-quadretti">
+            <div class="agent-quadretto">
+              <span class="agent-etichetta">{{localize "CPRX.NumeroAgent"}}</span>
+              <span class="agent-quadretto-valore">{{numeroSistema}}</span>
+            </div>
+            <div class="agent-quadretto">
+              <span class="agent-etichetta">{{localize "CPRX.Archivio"}}</span>
+              <span class="agent-quadretto-valore secondo">{{archivio}}</span>
+              <span class="agent-barra"><i style="width: {{archivioPercento}}%"></i></span>
+              <span class="agent-quadretto-nota">{{localize "CPRX.ArchivioSu"}} {{archivioLimite}}</span>
+            </div>
+          </div>
+
+          {{!-- Interruttori veri: si premono e cambiano il flag subito. --}}
+          <div class="agent-righe">
+            <button type="button" class="agent-riga-stato" data-action="commuta" data-flag="agentInterno"
+                    {{#unless puoScrivere}}disabled{{/unless}}>
+              <span class="agent-riga-nome">{{localize "CPRX.AgentInterno"}}</span>
+              <span class="agent-leva {{#if agentInterno}}acceso{{/if}}"></span>
+            </button>
+            <button type="button" class="agent-riga-stato" data-action="commuta" data-flag="gps"
+                    {{#unless puoScrivere}}disabled{{/unless}}>
+              <span class="agent-riga-nome">{{localize "CPRX.TracciamentoGps"}}</span>
+              <span class="agent-leva {{#if gps}}acceso{{/if}}"></span>
+            </button>
+            <div class="agent-riga-stato">
+              <span class="agent-riga-nome">{{localize "CPRX.MessaggiNonLetti"}}</span>
+              <span class="agent-riga-valore">{{nonLetti}}</span>
+            </div>
+          </div>
+
+          {{!-- Due scorciatoie che su un telefono ci sono sempre: le
+                impostazioni per intero, e il blocco. --}}
+          <div class="agent-righe">
+            <button type="button" class="agent-riga-stato agent-riga-vai"
+                    data-action="apriApp" data-app="impostazioni">
+              <span class="agent-riga-nome">{{localize "CPRX.Impostazioni"}}</span>
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button type="button" class="agent-riga-stato agent-riga-vai" data-action="blocca">
+              <span class="agent-riga-nome">{{localize "CPRX.BloccaDispositivo"}}</span>
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+
+          <div class="agent-sezione-riga">
+            <span class="agent-etichetta">{{localize "CPRX.Dispositivo"}}</span>
+            <span class="agent-filetto"></span>
+          </div>
+
+          <div class="agent-righe">
+            {{#each dispositivo}}
+            <div class="agent-riga-stato">
+              <span class="agent-riga-nome">{{this.etichetta}}</span>
+              <span class="agent-riga-valore">{{this.valore}}</span>
+            </div>
+            {{/each}}
+          </div>
+
+          <div class="agent-sezione-riga">
+            <span class="agent-etichetta">{{localize "CPRX.LogDispositivo"}}</span>
+            <span class="agent-filetto"></span>
+          </div>
+
+          {{#if haRegistro}}
+          <div class="agent-registro">
+            {{#each registro}}
+            <div><span class="{{#if this.allarme}}allarme{{/if}}">{{this.ora}}</span> {{this.testo}}</div>
+            {{/each}}
+          </div>
+          {{else}}
+          <p class="agent-vuoto">{{localize "CPRX.LogVuoto"}}</p>
+          {{/if}}
+        </div>
+
+      </div>
+    </div>
+
+    <div class="agent-pallini">
+      {{#each pagine}}
+      <button type="button" class="agent-pallino-pagina {{#if this.attiva}}attivo{{/if}}"
+              data-action="pagina" data-pagina="{{this.indice}}"
+              title="{{this.indice}}"><span></span></button>
+      {{/each}}
+    </div>
+
+    {{!-- La barra che stava qui adesso e' il dock, in fondo alla scocca:
+          c'e' in ogni schermata, non solo sulla home. --}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================= BANCA =========================== --}}
+  {{#if vistaBanca}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{!-- La carta. Il numero e la scadenza sono cifre di facciata ricavate
+          dall'identificativo dell'attore, come il seriale: stabili, e non
+          sono un dato che qualcuno debba tenere aggiornato. --}}
+    <div class="agent-conto" title="{{eddiesOrigine}}">
+      <div class="agent-carta-alto">
+        <span class="agent-carta-marca">
+          <span class="agent-etichetta acceso">{{localize "CPRX.BancaMarca"}}</span>
+          <span class="agent-etichetta">{{localize "CPRX.BancaContoCorrente"}}</span>
+        </span>
+        <span class="agent-carta-chip" aria-hidden="true"></span>
+      </div>
+
+      <span class="agent-etichetta">{{localize "CPRX.BancaSaldo"}}</span>
+      <div class="agent-conto-riga-cifra">
+        <span class="agent-conto-cifra">{{eddies}}</span>
+        <span class="agent-conto-valuta">€$</span>
+      </div>
+
+      <div class="agent-carta-basso">
+        <span class="agent-carta-numero">{{numeroCarta}}</span>
+        <span class="agent-carta-scadenza">
+          <span class="agent-etichetta">{{localize "CPRX.BancaScadenza"}}</span>
+          <span class="agent-carta-data">{{scadenzaCarta}}</span>
+        </span>
+      </div>
+    </div>
+
+    {{!-- Quattro tasti, e nessuno e' finto: aprono un pannello. --}}
+    <div class="agent-conto-tasti">
+      <button type="button" class="agent-conto-tasto {{#if bancaInvio}}attivo{{/if}}"
+              data-action="bancaPannello" data-pannello="invia"
+              {{#unless puoScrivere}}disabled{{/unless}}>
+        <i class="fa-solid fa-arrow-up"></i>
+        <span>{{localize "CPRX.BancaInvia"}}</span>
+      </button>
+      <button type="button" class="agent-conto-tasto {{#if bancaRichiesta}}attivo{{/if}}"
+              data-action="bancaPannello" data-pannello="richiedi"
+              {{#unless puoScrivere}}disabled{{/unless}}>
+        <i class="fa-solid fa-arrow-down"></i>
+        <span>{{localize "CPRX.BancaRichiedi"}}</span>
+      </button>
+      <button type="button" class="agent-conto-tasto {{#if bancaCarta}}attivo{{/if}}"
+              data-action="bancaPannello" data-pannello="carta">
+        <i class="fa-solid fa-credit-card"></i>
+        <span>{{localize "CPRX.BancaCarta"}}</span>
+      </button>
+      <button type="button" class="agent-conto-tasto" data-action="apriApp"
+              data-app="telefono" data-scheda="tastierino">
+        <i class="fa-solid fa-qrcode"></i>
+        <span>{{localize "CPRX.BancaComponi"}}</span>
+      </button>
+    </div>
+
+    {{#if bancaInvio}}
+    <div class="agent-modulo">
+      <div class="agent-riga">
+        <input type="text" name="bersaglio" value="{{bersaglio}}"
+               placeholder="{{localize 'CPRX.Numero'}}" />
+        <input type="number" name="importo" min="1" step="1" placeholder="0" />
+      </div>
+      <input type="text" name="causale" placeholder="{{localize 'CPRX.BancaCausale'}}" />
+      <button type="button" class="agent-cta" data-action="bancaInvia">
+        {{localize "CPRX.BancaBonifico"}}
+      </button>
+    </div>
+    {{/if}}
+
+    {{#if bancaRichiesta}}
+    <div class="agent-modulo">
+      <div class="agent-riga">
+        <input type="text" name="bersaglio" value="{{bersaglio}}"
+               placeholder="{{localize 'CPRX.Numero'}}" />
+        <input type="number" name="importo" min="1" step="1" placeholder="0" />
+      </div>
+      <input type="text" name="causale" placeholder="{{localize 'CPRX.BancaCausale'}}" />
+      <button type="button" class="agent-cta" data-action="bancaRichiedi">
+        {{localize "CPRX.BancaRichiedi"}}
+      </button>
+      <p class="agent-nota">{{localize "CPRX.BancaRichiestaNota"}}</p>
+    </div>
+    {{/if}}
+
+    {{#if bancaCarta}}
+    <div class="agent-righe">
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.BancaIntestatario"}}</span>
+        <span class="agent-riga-valore">{{intestatario}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.NumeroAgent"}}</span>
+        <span class="agent-riga-valore">{{numeroMio}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.NumeroSerie"}}</span>
+        <span class="agent-riga-valore">{{seriale}}</span>
+      </div>
+    </div>
+    {{/if}}
+
+    {{!-- Il flusso della settimana: entrate sopra, uscite sotto, e la scala
+          e' il giorno piu' grosso — con un solo movimento la prima colonna
+          riempirebbe il grafico. --}}
+    <div class="agent-flusso">
+      <div class="agent-flusso-alto">
+        <span class="agent-etichetta">{{localize "CPRX.BancaFlusso"}}</span>
+        <span class="agent-flusso-netto">{{nettoSettimana}}</span>
+      </div>
+      <div class="agent-flusso-colonne">
+        {{#each settimana}}
+        <div class="agent-flusso-colonna">
+          <i class="dentro" style="height: {{this.dentro}}%"></i>
+          <i class="fuori" style="height: {{this.fuori}}%"></i>
+          <span class="agent-etichetta">{{this.etichetta}}</span>
+        </div>
+        {{/each}}
+      </div>
+      <div class="agent-flusso-legenda">
+        <span><i class="dentro"></i>{{localize "CPRX.FiltroEntrate"}}</span>
+        <span><i class="fuori"></i>{{localize "CPRX.FiltroUscite"}}</span>
+      </div>
+    </div>
+
+    <div class="agent-quadretti">
+      <div class="agent-quadretto">
+        <span class="agent-etichetta">{{localize "CPRX.BancaEntrate30"}}</span>
+        <span class="agent-quadretto-valore secondo">+{{entrateMese}}</span>
+      </div>
+      <div class="agent-quadretto">
+        <span class="agent-etichetta">{{localize "CPRX.BancaUscite30"}}</span>
+        <span class="agent-quadretto-valore critico">−{{usciteMese}}</span>
+      </div>
+    </div>
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.BancaMovimenti"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    <div class="agent-pillole">
+      {{#each filtriBanca}}
+      <button type="button" class="agent-pillola {{#if this.attiva}}attiva{{/if}}"
+              data-action="filtroBanca" data-filtro="{{this.chiave}}">{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    {{#if vuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.BancaVuota"}}</p>
+    {{else}}
+    {{#each giorni}}
+    <div class="agent-giornata">
+      <div class="agent-giornata-alto">
+        <span class="agent-etichetta">{{this.giorno}}</span>
+        <span class="agent-giornata-saldo {{#unless this.positivo}}uscita{{/unless}}">{{this.saldoTesto}}</span>
+      </div>
+      <ul class="agent-elenco">
+        {{#each this.righe}}
+        <li class="agent-movimento {{#if this.entrata}}entrata{{/if}}">
+          <span class="agent-movimento-segno"><i class="{{this.segno}}"></i></span>
+          <div class="agent-voce-testo">
+            <span class="agent-voce-titolo">{{this.causale}}</span>
+            <span class="agent-voce-sotto">{{this.ora}}{{#if this.controparte}} · {{this.controparte}}{{/if}}</span>
+          </div>
+          <span class="agent-movimento-cifra">{{this.importo}}</span>
+        </li>
+        {{/each}}
+      </ul>
+    </div>
+    {{/each}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================= CASA ============================ --}}
+  {{#if vistaCasa}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      {{#if eddiesNoti}}<span class="agent-saldo">{{eddies}} eb</span>{{/if}}
+    </header>
+
+    {{!-- La scheda d'apertura: dove vivi e quanto costa il mese. Le tre
+          celle sotto scompongono la cifra grande, e quando una miglioria
+          sconta qualcosa lo dice: un totale che non torna con le righe che
+          lo compongono e' un totale che nessuno crede. --}}
+    <div class="agent-conto">
+      <div class="agent-conto-alto">
+        <span class="agent-etichetta">{{localize "CPRX.CasaCanoneMensile"}}</span>
+        <span class="agent-conto-numero-riga">{{etichettaAlloggio}}</span>
+      </div>
+      <div class="agent-conto-cifra">{{totale}}</div>
+
+      <div class="agent-celle">
+        <div class="agent-cella">
+          <span class="agent-cella-valore">{{canone}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.CasaAffitto"}}</span>
+        </div>
+        <div class="agent-cella">
+          <span class="agent-cella-valore">{{cibo}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.CasaVitto"}}</span>
+        </div>
+        <div class="agent-cella">
+          <span class="agent-cella-valore">{{arretrati}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.CasaArretrati"}}</span>
+        </div>
+      </div>
+
+      {{#if haSconto}}
+      <p class="agent-nota agent-abbonato">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+        {{localize "CPRX.CasaScontoQg"}} · −{{sconto}} eb
+      </p>
+      {{/if}}
+    </div>
+
+    {{#if corporativo}}
+    <p class="agent-nota agent-abbonato">
+      <i class="fa-solid fa-building"></i> {{localize "CPRX.CasaCorporativo"}}
+    </p>
+    {{/if}}
+
+    {{#if haArretrati}}
+    <p class="agent-nota agent-arena-avviso">{{localize "CPRX.CasaInMora"}}</p>
+    {{/if}}
+
+    {{!-- Il canone puo' non scattare col calendario: se il tavolo ha spento
+          l'automatismo va detto, altrimenti uno aspetta un addebito che non
+          arrivera' mai. --}}
+    {{#unless mesiAuto}}
+    <p class="agent-nota">{{localize "CPRX.CasaCanoneAMano"}}</p>
+    {{/unless}}
+
+    <div class="agent-righe">
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.CasaUltimoPagamento"}}</span>
+        <span class="agent-riga-valore">{{ultimoTesto}}</span>
+      </div>
+    </div>
+
+    {{!-- Alloggio e vitto sono pillole e non due menu a tendina: sono
+          quattro voci per uno, e una tendina per quattro voci nasconde la
+          scelta dietro un clic in piu'. Si salvano premendole. --}}
+    {{#unless corporativo}}
+    {{#if puoScrivere}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.CasaAlloggio"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-pillole">
+      {{#each alloggi}}
+      <button type="button" class="agent-pillola {{#if this.scelto}}attiva{{/if}}"
+              data-action="casaScegli" data-campo="alloggio" data-valore="{{this.chiave}}">
+        {{this.etichetta}} · {{this.canone}}
+      </button>
+      {{/each}}
+    </div>
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.CasaVitto"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-pillole">
+      {{#each vitti}}
+      <button type="button" class="agent-pillola {{#if this.scelto}}attiva{{/if}}"
+              data-action="casaScegli" data-campo="vitto" data-valore="{{this.chiave}}">
+        {{this.etichetta}} · {{this.costo}}
+      </button>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if puoPagare}}
+    <button type="button" class="agent-cta" data-action="casaPaga">
+      {{localize "CPRX.CasaPaga"}} {{totale}} eb
+    </button>
+    {{/if}}
+    {{/unless}}
+
+    {{!-- Il Quartier Generale. I Punti Miglioria li assegna il master dalla
+          console: sono quello che la squadra si e' costruita, non una cosa
+          che si compra col portafogli. --}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.QgTitolo"}} · {{pmqg}} PMQG</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-elenco">
+      {{#each migliorieVoci}}
+      <button type="button" class="agent-voce agent-qg-riga {{#if this.attiva}}costruita{{/if}}"
+              data-action="casaMiglioria" data-miglioria="{{this.chiave}}"
+              {{#unless ../puoScrivere}}disabled{{/unless}}>
+        <span class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          <span class="agent-voce-sotto">{{this.nota}}</span>
+        </span>
+        <span class="agent-marchietto">
+          {{#if this.attiva}}{{localize "CPRX.QgAttiva"}}{{else}}{{this.costo}} PMQG{{/if}}
+        </span>
+      </button>
+      {{/each}}
+    </div>
+
+    {{#if haStorico}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.CasaStorico"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-elenco">
+      {{#each storico}}
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{this.quando}} · {{this.controparte}}</span>
+        <span class="agent-riga-valore">{{this.importo}} eb</span>
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if puoScrivere}}
+    <p class="agent-nota">{{localize "CPRX.CasaNota"}}</p>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================== CORP LINK ========================== --}}
+  {{!-- Il portale dipendenti. **Qui dentro non si scrive niente**: la
+        Corporazione e il livello del badge li assegna il master dalla
+        console, avvisi, accessi e incarichi stanno nell'archivio aziendale.
+        L'unica linguetta che non legge l'archivio e' quella dei benefit,
+        che si ricavano da dove stanno gia'. --}}
+  {{#if vistaCorp}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{#if corpSenzaBadge}}
+    {{!-- Nessun badge: non c'e' niente da mostrare e niente da fare. Il
+          master legge dove si assegna, il giocatore legge che non e' cosa
+          sua. --}}
+    <div class="agent-eroe agent-corp-badge">
+      <div class="agent-corp-testa">
+        <span class="agent-corp-glifo grande">?</span>
+        <span class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{localize "CPRX.CorpSenzaBadge"}}</span>
+          <span class="agent-voce-sotto">{{localize "CPRX.CorpSenzaBadgeNota"}}</span>
+        </span>
+      </div>
+    </div>
+    {{#if eGm}}
+    <p class="agent-nota">{{localize "CPRX.CorpAssegnaDaConsole"}}</p>
+    {{/if}}
+    {{else}}
+
+    {{!-- Il badge. La tinta la porta la Corporazione, non il tema: due
+          dipendenti di due aziende diverse non hanno la stessa tessera. --}}
+    <div class="agent-eroe agent-corp-badge" style="--corp-tinta: {{corp.colore}}">
+      <div class="agent-corp-testa">
+        <span class="agent-corp-glifo grande">{{corp.glifo}}</span>
+        <span class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{corp.nome}}</span>
+          <span class="agent-voce-sotto">{{corp.settore}}</span>
+        </span>
+      </div>
+      <div class="agent-celle">
+        <div class="agent-cella">
+          <span class="agent-cella-valore">{{corp.livello}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.CorpLivello"}}</span>
+        </div>
+        <div class="agent-cella">
+          <span class="agent-cella-valore">{{corp.badge}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.CorpBadge"}}</span>
+        </div>
+        <div class="agent-cella">
+          <span class="agent-cella-valore {{#unless corp.attivo}}agent-corp-sospeso{{/unless}}">{{corpStato}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.CorpAccesso"}}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="agent-pillole">
+      {{#each corpSchede}}
+      <button type="button" class="agent-pillola {{#if this.attiva}}attiva{{/if}}"
+              data-action="corpScheda" data-scheda="{{this.chiave}}">{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    {{#if corpBachecaAperta}}
+    {{#if haAvvisi}}
+    <div class="agent-elenco">
+      {{#each avvisi}}
+      <div class="agent-voce agent-corp-avviso">
+        <span class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          <span class="agent-voce-sotto">{{this.testo}}</span>
+          <span class="agent-etichetta">{{this.quando}}</span>
+        </span>
+        {{#if this.tag}}<span class="agent-marchietto">{{this.tag}}</span>{{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.CorpBachecaVuota"}}</p>
+    {{/if}}
+    {{/if}}
+
+    {{#if corpAccessiAperta}}
+    <div class="agent-elenco">
+      {{#each accessi}}
+      <div class="agent-voce agent-corp-accesso {{#if this.aperto}}aperto{{else}}chiuso{{/if}}">
+        <span class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          <span class="agent-voce-sotto">{{this.nota}}</span>
+        </span>
+        <span class="agent-marchietto">
+          {{localize "CPRX.CorpLivello"}} {{this.livello}} ·
+          {{#if this.aperto}}{{localize "CPRX.CorpAperto"}}{{else}}{{localize "CPRX.CorpChiuso"}}{{/if}}
+        </span>
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{!-- Gli incarichi li mette l'azienda, come gli avvisi: qui si leggono
+          e basta. Chi li vuole seguire se li segna nella sua App Incarichi,
+          che e' un'altra cosa e sta sul suo telefono. --}}
+    {{#if corpIncarichiAperta}}
+    {{#if haIncarichi}}
+    <div class="agent-elenco">
+      {{#each incarichi}}
+      <div class="agent-voce agent-corp-incarico">
+        <span class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          <span class="agent-voce-sotto">{{this.testo}}</span>
+          {{#if this.tag}}<span class="agent-etichetta">{{this.tag}}</span>{{/if}}
+        </span>
+        {{#if this.importo}}<span class="agent-voce-cifra">{{this.importo}} eb</span>{{/if}}
+      </div>
+      {{/each}}
+    </div>
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.CorpIncarichiVuoti"}}</p>
+    {{/if}}
+    {{/if}}
+
+    {{#if corpBenefitAperta}}
+    <div class="agent-elenco">
+      {{#each benefit}}
+      <div class="agent-voce agent-corp-benefit {{#if this.attivo}}attivo{{/if}}">
+        <span class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          <span class="agent-voce-sotto">{{this.nota}}</span>
+        </span>
+        <span class="agent-marchietto">
+          {{#if this.attivo}}{{localize "CPRX.CorpIncluso"}}{{else}}{{localize "CPRX.CorpNonIncluso"}}{{/if}}
+        </span>
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if corpHaScheda}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.CorpScheda"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-elenco">
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.CorpQg"}}</span>
+        <span class="agent-riga-valore">{{corp.qg}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.CorpDirigente"}}</span>
+        <span class="agent-riga-valore">{{corp.dirigente}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.CorpImpiegati"}}</span>
+        <span class="agent-riga-valore">{{corp.impiegati}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.CorpUffici"}}</span>
+        <span class="agent-riga-valore">{{corp.uffici}}</span>
+      </div>
+    </div>
+    <p class="agent-nota">{{corp.note}}</p>
+    {{/if}}
+
+    <p class="agent-nota">{{localize "CPRX.CorpTracciato"}}</p>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================= REPUTAZIONE ========================= --}}
+  {{#if vistaReputazione}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{#if repNota}}
+    <div class="agent-conto">
+      <div class="agent-conto-alto">
+        <span class="agent-etichetta">{{localize "CPRX.RepTuoNome"}}</span>
+        <span class="agent-conto-numero-riga">{{repLivello}}</span>
+      </div>
+      <div class="agent-conto-cifra">{{repValore}}</div>
+      <p class="agent-nota{{#if repPubblica}} agent-abbonato{{/if}}">
+        <i class="fa-solid fa-tower-broadcast"></i> {{repPortata}}
+      </p>
+    </div>
+
+    {{!-- La scala: dove sei e quanto manca al gradino dopo. --}}
+    <div class="agent-rep-scala">
+      {{#each repScala}}
+      <div class="agent-rep-gradino{{#if this.qui}} qui{{/if}}">
+        <span class="agent-rep-soglia">{{this.da}}+</span>
+        <span class="agent-rep-nome">{{this.etichetta}}</span>
+      </div>
+      {{/each}}
+    </div>
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.RepRegistro"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <p class="agent-nota">{{localize "CPRX.RepRegistroNota"}}</p>
+
+    {{#if repHaRegistro}}
+    <ul class="agent-elenco">
+      {{#each repRegistro}}
+      <li class="agent-voce">
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.testo}}</span>
+          {{#if this.motivo}}<span class="agent-voce-sotto">{{this.motivo}}</span>{{/if}}
+        </div>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.RepRegistroVuoto"}}</p>
+    {{/if}}
+
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.RepNonLetta"}}</p>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================== CALENDARIO ========================= --}}
+  {{#if vistaCalendario}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-cal-oggi">
+      <span class="agent-cal-oggi-data">{{oggiLungo}}</span>
+      <span class="agent-cal-oggi-ora">{{oggiOra}}</span>
+      <span class="agent-cal-oggi-sett">
+        {{localize "CPRX.CalSettimana"}} {{settimanaNumero}}
+      </span>
+    </div>
+
+    {{!-- La griglia del mese. Le celle sono bottoni: toccarne una apre il
+          suo giorno qui sotto. --}}
+    <div class="agent-cal-barra">
+      <button type="button" class="agent-solo-icona" data-action="calMese"
+              data-mese="{{precedente}}" title="{{localize 'CPRX.CalPrecedente'}}">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <span class="agent-cal-mese">{{intestazioneMese}}</span>
+      <button type="button" class="agent-solo-icona" data-action="calMese"
+              data-mese="{{seguente}}" title="{{localize 'CPRX.CalSeguente'}}">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <div class="agent-cal-griglia">
+      {{#each iniziali}}
+      <span class="agent-cal-iniziale" aria-hidden="true">{{this}}</span>
+      {{/each}}
+
+      {{#each celle}}
+      {{#if this.fuori}}
+      <span class="agent-cal-cella fuori">{{this.numero}}</span>
+      {{else}}
+      <button type="button" data-action="calGiorno" data-giorno="{{this.chiave}}"
+              class="agent-cal-cella{{#if this.oggi}} oggi{{/if}}{{#if this.scelto}} scelto{{/if}}">
+        {{this.numero}}
+        {{#if this.punto}}<span class="agent-cal-punto"></span>{{/if}}
+      </button>
+      {{/if}}
+      {{/each}}
+    </div>
+
+    {{#if tornaOggi}}
+    <button type="button" class="agent-conferma" data-action="calMese" data-mese="0">
+      <i class="fa-solid fa-rotate-left"></i> {{localize "CPRX.CalTornaOggi"}}
+    </button>
+    {{/if}}
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{giornoLungo}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    {{#if haEventi}}
+    <ul class="agent-elenco">
+      {{#each eventi}}
+      <li class="agent-voce">
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          {{#if this.testo}}<span class="agent-voce-sotto">{{this.testo}}</span>{{/if}}
+        </div>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.CalNienteQuelGiorno"}}</p>
+    {{/if}}
+
+    {{#if haProssimi}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.CalInProgramma"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <ul class="agent-elenco">
+      {{#each prossimi}}
+      <li class="agent-voce">
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          <span class="agent-voce-sotto">
+            {{#if this.oggi}}{{localize "CPRX.CalOggi"}}{{else}}{{this.quando}}{{/if}}
+          </span>
+        </div>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+
+    {{!-- Le scadenze: quello che ti verra' addebitato, e quando. Non e' un
+          elenco archiviato — il canone lo sa Casa, l'abbonamento lo sa
+          l'App che ce l'ha, e qui si leggono. --}}
+    {{#if haScadenze}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.CalScadenze"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-elenco">
+      {{#each scadenze}}
+      <div class="agent-voce agent-cal-scadenza">
+        <span class="agent-cal-quando">{{this.quando}}</span>
+        <span class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          <span class="agent-voce-sotto">{{this.nota}}</span>
+        </span>
+        <span class="agent-voce-cifra">{{this.importo}}</span>
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{!-- ---------------------- downtime ---------------------- --}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">
+        {{localize "CPRX.DtTitolo"}} · {{localize "CPRX.CalSettimana"}} {{dtSettimana}}
+      </span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    {{#if dtModulo}}
+    <div class="agent-modulo">
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.DtCosaFai"}}</span>
+        <select name="dtAttivita">
+          {{#each dtAttivita}}
+          <option value="{{this.chiave}}" {{#if this.scelta}}selected{{/if}}>{{this.etichetta}}</option>
+          {{/each}}
+        </select>
+      </label>
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.DtNota"}}</span>
+        <textarea name="dtNota" rows="3" placeholder="{{localize 'CPRX.DtNotaEsempio'}}">{{dtVoce.nota}}</textarea>
+      </label>
+      <div class="agent-modulo-azioni">
+        <button type="button" class="agent-primario" data-action="dtSalva">
+          <i class="fa-solid fa-floppy-disk"></i> {{localize "CPRX.Salva"}}
+        </button>
+        <button type="button" data-action="dtAnnulla">{{localize "CPRX.Annulla"}}</button>
+      </div>
+    </div>
+
+    {{else if dtVoce}}
+    <div class="agent-dt-voce{{#if dtVoce.chiuso}} chiusa{{/if}}">
+      <div class="agent-dt-capo">
+        <i class="{{dtVoce.icona}}"></i>
+        <span class="agent-dt-nome">{{dtVoce.etichetta}}</span>
+        <span class="agent-dt-stato">
+          {{#if dtVoce.chiuso}}{{localize "CPRX.DtChiusa"}}{{else}}{{localize "CPRX.DtInAttesa"}}{{/if}}
+        </span>
+      </div>
+      {{#if dtVoce.nota}}<p class="agent-dt-nota">{{dtVoce.nota}}</p>{{/if}}
+      {{#if dtVoce.esito}}
+      <p class="agent-dt-esito"><span>{{localize "CPRX.DtEsito"}}</span> {{dtVoce.esito}}</p>
+      {{/if}}
+    </div>
+
+    {{#if dtModificabile}}
+    {{#if puoScrivere}}
+    <div class="agent-modulo-azioni">
+      <button type="button" data-action="dtApri">
+        <i class="fa-solid fa-pen"></i> {{localize "CPRX.DtCambia"}}
+      </button>
+      <button type="button" class="agent-rosso" data-action="dtRitira">
+        <i class="fa-solid fa-xmark"></i> {{localize "CPRX.DtRitira"}}
+      </button>
+    </div>
+    {{/if}}
+    {{/if}}
+
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.DtNienteDichiarato"}}</p>
+    {{#if puoScrivere}}
+    <button type="button" class="agent-primario agent-conferma" data-action="dtApri">
+      <i class="fa-solid fa-calendar-check"></i> {{localize "CPRX.DtDichiara"}}
+    </button>
+    {{/if}}
+    {{/if}}
+
+    {{#if dtHaStorico}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.DtPassate"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <ul class="agent-elenco">
+      {{#each dtStorico}}
+      <li class="agent-voce">
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">
+            <i class="{{this.icona}}"></i> {{this.etichetta}}
+          </span>
+          <span class="agent-voce-sotto">
+            {{localize "CPRX.CalSettimana"}} {{this.settimana}}{{#if this.esito}} · {{this.esito}}{{/if}}
+          </span>
+        </div>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================== APP STORE ========================= --}}
+  {{#if vistaAppStore}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      {{#if eddiesNoti}}<span class="agent-saldo">{{eddies}} eb</span>{{/if}}
+    </header>
+
+    <div class="agent-cerca">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" name="ricerca" value="{{ricerca}}"
+             placeholder="{{localize 'CPRX.StoreCerca'}}" />
+    </div>
+
+    <div class="agent-pillole">
+      {{#each fasce}}
+      <button type="button" class="agent-pillola {{#if this.attiva}}attiva{{/if}}"
+              data-action="fasciaStore" data-fascia="{{this.chiave}}">{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    {{!-- Una riga per App, dentro una scheda sola: la mattonella colorata a
+          sinistra porta la tinta dell'App, e il tasto a destra dice in una
+          parola cosa succede se lo premi. --}}
+    {{#if vuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.NienteInVetrina"}}</p>
+    {{else}}
+    <ul class="agent-elenco">
+      {{#each catalogo}}
+      <li class="agent-voce app-{{this.chiave}}">
+        <span class="agent-store-icona"><i class="{{this.icona}}"></i></span>
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          <span class="agent-voce-sotto">{{this.produttore}} · {{this.disponibilita}}</span>
+          <span class="agent-voce-corpo">{{this.descrizione}}</span>
+        </div>
+        {{#if this.diSerie}}
+        <span class="agent-store-serie">{{localize "CPRX.StoreDiSerie"}}</span>
+        {{else if this.soloMaster}}
+        {{!-- La mette il datore di lavoro, e al tavolo e' il master: in
+              catalogo si legge cosa fa, ma il tasto ce l'ha lui. --}}
+        <span class="agent-store-serie">{{localize "CPRX.StoreSoloMaster"}}</span>
+        {{else if ../puoScrivere}}
+        {{#unless this.posseduta}}
+        <button type="button" class="agent-pillola agent-store-tasto" data-action="compraApp"
+                data-chiave="{{this.chiave}}" {{#if this.troppoCara}}disabled{{/if}}>
+          {{#if this.gratuita}}{{localize "CPRX.StoreOttieni"}}{{else}}{{this.prezzo}} eb{{/if}}
+        </button>
+        {{else}}
+          {{#if this.installata}}
+          <button type="button" class="agent-pillola agent-store-tasto" data-action="disinstallaApp"
+                  data-chiave="{{this.chiave}}">{{localize "CPRX.Disinstalla"}}</button>
+          {{else}}
+          <button type="button" class="agent-pillola agent-store-tasto attiva" data-action="installaApp"
+                  data-chiave="{{this.chiave}}">{{localize "CPRX.Installa"}}</button>
+          {{/if}}
+        {{/unless}}
+        {{else}}
+        <span class="agent-articolo-prezzo">{{this.prezzo}} eb</span>
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ====================== APP INSTALLATA ======================== --}}
+  {{#if vistaInstallata}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-installata">
+      <span class="agent-scheda-icona grande"><i class="{{iconaApp}}"></i></span>
+      <span class="agent-blocco-riga">{{produttore}}</span>
+      <p class="agent-installata-testo">{{descrizione}}</p>
+      {{#if puoScrivere}}
+      <button type="button" data-action="disinstallaApp" data-chiave="{{chiaveApp}}">
+        <i class="fa-solid fa-trash-can-arrow-up"></i> {{localize "CPRX.Disinstalla"}}
+      </button>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- ========================== AGENT BRUCIATO ===================== --}}
+  {{#if vistaDistrutto}}
+  <div class="agent-schermo agent-guasto">
+    <i class="fa-solid fa-triangle-exclamation agent-guasto-icona"></i>
+    <span class="agent-guasto-titolo">{{localize "CPRX.AgentDistrutto"}}</span>
+    <p class="agent-installata-testo">{{localize "CPRX.AgentDistruttoTesto"}}</p>
+
+    {{#if eGm}}
+    <button type="button" class="agent-primario" data-action="riparaAgent">
+      <i class="fa-solid fa-screwdriver-wrench"></i> {{localize "CPRX.RiparaAgent"}}
+    </button>
+    {{else}}
+      {{#if puoScrivere}}
+      <button type="button" class="agent-primario" data-action="riparaAgent">
+        <i class="fa-solid fa-cart-plus"></i> {{localize "CPRX.SostituisciAgent"}} — {{prezzoAgent}} eb
+      </button>
+      {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================ CHIAMATA ========================= --}}
+  {{#if vistaChiamata}}
+  <div class="agent-schermo agent-chiamata">
+    <span class="agent-chiamata-stato">{{chiamata.etichettaStato}}</span>
+
+    <div class="agent-chiamata-tondo" aria-hidden="true">
+      {{#if chiamata.gruppo}}<i class="fa-solid fa-users"></i>
+      {{else}}<span>{{chiamata.iniziali}}</span>{{/if}}
+    </div>
+
+    <span class="agent-chiamata-nome">{{chiamata.nome}}</span>
+    <span class="agent-chiamata-numero">{{chiamata.etichettaNumero}}</span>
+    <span class="agent-chiamata-durata" data-durata>{{chiamata.durataTesto}}</span>
+
+    {{!-- In un gruppo si vede chi c'e' dentro e chi sta ancora squillando. --}}
+    {{#if chiamata.gruppo}}
+    <ul class="agent-chiamata-gente">
+      {{#each chiamata.partecipanti}}
+      <li class="{{#if this.inLinea}}in-linea{{/if}}">
+        <i class="fa-solid {{#if this.inLinea}}fa-phone{{else}}fa-signal{{/if}}"></i>
+        <span>{{this.nome}}</span>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+
+    {{#if invito}}
+    <div class="agent-chiamata-invito">
+      {{#if haInvitabili}}
+      <ul class="agent-elenco agent-scelte">
+        {{#each invitabili}}
+        <li class="agent-voce">
+          <label class="agent-scelta">
+            <input type="checkbox" name="invita-{{this.numero}}" />
+            <span class="agent-voce-titolo">{{this.nome}}</span>
+          </label>
+        </li>
+        {{/each}}
+      </ul>
+      {{/if}}
+      <div class="agent-riga">
+        <input type="text" name="invitaNumeri" placeholder="{{localize 'CPRX.GruppoAltriNumeri'}}" />
+        <button type="button" class="agent-primario agent-solo-icona" data-action="chiamataInvita"
+                title="{{localize 'CPRX.ChiamataInvita'}}"><i class="fa-solid fa-user-plus"></i></button>
+      </div>
+    </div>
+    {{/if}}
+
+    {{!-- I comandi secondari stanno in una griglia sopra il tasto rosso,
+          come nel progetto di design. Sono **solo quelli veri**: muto,
+          vivavoce e registrazione qui non esisterebbero, e un tasto che non
+          fa niente e' peggio di un tasto che manca. --}}
+    {{#if puoAggiungere}}
+    <div class="agent-chiamata-comandi">
+      <button type="button" class="agent-chiamata-comando" data-action="chiamataAggiungi">
+        <i class="fa-solid fa-user-plus"></i>
+        <span>{{localize "CPRX.ChiamataAggiungi"}}</span>
+      </button>
+      <button type="button" class="agent-chiamata-comando" data-action="chiamataSfondo">
+        <i class="fa-solid fa-down-left-and-up-right-to-center"></i>
+        <span>{{localize "CPRX.ChiamataSfondo"}}</span>
+      </button>
+    </div>
+    {{/if}}
+
+    <div class="agent-chiamata-tasti">
+      {{#if chiamata.daRispondere}}
+      <button type="button" class="agent-tondo agent-tondo-verde" data-action="rispondiChiamata"
+              title="{{localize 'CPRX.Rispondi'}}" aria-label="{{localize 'CPRX.Rispondi'}}">
+        <i class="fa-solid fa-phone"></i>
+      </button>
+      {{/if}}
+      <button type="button" class="agent-tondo agent-tondo-rosso" data-action="chiudiChiamata"
+              title="{{chiamata.etichettaChiudi}}" aria-label="{{chiamata.etichettaChiudi}}">
+        <i class="fa-solid fa-phone-slash"></i>
+      </button>
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- ============================ MESSAGGI ========================= --}}
+  {{#if vistaMessaggi}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      <span class="agent-saldo">{{numeroMio}}</span>
+    </header>
+
+    <div class="agent-cerca">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" name="ricerca" value="{{ricerca}}"
+             placeholder="{{localize 'CPRX.Cerca'}}" />
+    </div>
+
+    <div class="agent-pillole">
+      {{#each filtriMsg}}
+      <button type="button" class="agent-pillola {{#if this.attiva}}attiva{{/if}}"
+              data-action="filtroMsg" data-filtro="{{this.chiave}}">{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    {{#if vuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.NessunaConversazione"}}</p>
+    {{else}}
+    {{!-- Il non letto e' un punto, non un contatore: quante righe non hai
+          letto non cambia niente, che ce ne siano lo cambia. --}}
+    <ul class="agent-elenco">
+      {{#each conversazioni}}
+      <li class="agent-voce agent-filo-riga {{#if this.nonLetti}}nuovo{{/if}} {{#if this.gruppo}}di-gruppo{{/if}}">
+        <span class="agent-tondo-iniziali">
+          {{#if this.gruppo}}<i class="fa-solid fa-users"></i>
+          {{else if this.senzaNome}}<i class="fa-solid fa-user"></i>
+          {{else}}{{this.iniziale}}{{/if}}
+        </span>
+        <button type="button" class="agent-voce-apri" data-action="apriConversazione"
+                data-numero="{{this.numero}}">
+          <span class="agent-filo-testata">
+            <span class="agent-voce-titolo">{{this.nome}}</span>
+            <span class="agent-filo-quando">{{this.quando}}</span>
+          </span>
+          <span class="agent-filo-coda">
+            <span class="agent-voce-sotto">{{this.anteprima}}</span>
+            {{#if this.nonLetti}}<i class="agent-punto"></i>{{/if}}
+          </span>
+        </button>
+        {{#if ../puoScrivere}}
+        <div class="agent-voce-azioni">
+          <button type="button" class="agent-solo-icona" data-action="cancellaChat"
+                  data-numero="{{this.numero}}" title="{{localize 'CPRX.CancellaChat'}}">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+
+    {{!-- Aprire un filo nuovo sta in fondo, non in cima: la cosa che si fa
+          entrando nei messaggi e' leggere quelli che ci sono. Il numero si
+          scrive quando serve — di solito si scrive a chi ti ha gia' scritto,
+          e il campo sempre aperto era una riga di modulo in mezzo a un
+          elenco. --}}
+    {{#if puoScrivere}}
+    {{#if compositore}}
+    <div class="agent-riga">
+      <input type="text" name="composto" value="" placeholder="{{localize 'CPRX.NuovoNumero'}}" />
+      <button type="button" class="agent-solo-icona" data-action="apriConversazione"
+              title="{{localize 'CPRX.Scrivi'}}"><i class="fa-solid fa-pen-to-square"></i></button>
+      <button type="button" class="agent-solo-icona" data-action="gruppoNuovo"
+              title="{{localize 'CPRX.GruppoNuovo'}}"><i class="fa-solid fa-users"></i></button>
+    </div>
+    {{/if}}
+    <button type="button" class="agent-tasto-lungo {{#if compositore}}attivo{{/if}}"
+            data-action="compositore">
+      {{#if compositore}}{{localize "CPRX.Annulla"}}{{else}}{{localize "CPRX.NuovoMessaggio"}}{{/if}}
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================== CONVERSAZIONE ====================== --}}
+  {{#if vistaConversazione}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="apriApp" data-app="messaggi">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      {{#if puoScrivere}}
+      {{!-- In un gruppo non c'e' un numero da chiamare ne' da salvare in
+            rubrica: si esce, e basta. --}}
+      {{#if gruppo}}
+      <button type="button" class="agent-solo-icona" data-action="gruppoChiama"
+              title="{{localize 'CPRX.GruppoChiama'}}">
+        <i class="fa-solid fa-phone"></i>
+      </button>
+      <button type="button" class="agent-solo-icona" data-action="gruppoEsci"
+              title="{{localize 'CPRX.GruppoEsci'}}">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+      {{else}}
+      <button type="button" class="agent-solo-icona" data-action="chiama" data-numero="{{numeroAltro}}"
+              title="{{localize 'CPRX.Chiama'}}"><i class="fa-solid fa-phone"></i></button>
+      {{!-- Un numero coperto non si salva: in rubrica ci finirebbe scritto. --}}
+      {{#unless coperto}}
+      {{#unless inRubrica}}
+      <button type="button" class="agent-solo-icona" data-action="salvaContatto" data-numero="{{numeroAltro}}"
+              title="{{localize 'CPRX.SalvaContatto'}}"><i class="fa-solid fa-user-plus"></i></button>
+      {{/unless}}
+      {{/unless}}
+      {{/if}}
+      <button type="button" class="agent-solo-icona" data-action="cancellaChat"
+              data-numero="{{chiaveFilo}}" title="{{localize 'CPRX.CancellaChat'}}">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+      {{/if}}
+    </header>
+
+    {{#if gruppo}}
+    <p class="agent-gruppo-membri">
+      <i class="fa-solid fa-users"></i>
+      <span>{{membriTesto}}</span>
+    </p>
+    {{/if}}
+
+    {{#if coperto}}
+    <p class="agent-vuoto">{{localize "CPRX.ConversazioneCoperta"}}</p>
+    {{/if}}
+
+    {{#unless raggiungibile}}
+    <p class="agent-vuoto">{{localize "CPRX.NumeroSpento"}}</p>
+    {{/unless}}
+
+    <ul class="agent-filo">
+      {{#each voci}}
+      <li class="agent-bolla {{#if this.uscente}}mia{{/if}} {{#if this.chiamata}}squillo{{/if}}">
+        {{#if this.mittente}}
+        <span class="agent-bolla-mittente">{{this.mittente}}</span>
+        {{/if}}
+        {{#if this.immagine}}
+        <img class="agent-bolla-immagine" src="{{this.immagine}}" alt="" />
+        {{/if}}
+        {{#if this.testo}}<span class="agent-bolla-testo">{{this.testo}}</span>{{/if}}
+        <span class="agent-bolla-ora">{{this.ora}}</span>
+      </li>
+      {{/each}}
+    </ul>
+
+    {{#if puoScrivere}}
+    <div class="agent-scrivi">
+      <textarea name="testo" rows="2" placeholder="{{localize 'CPRX.ScriviMessaggio'}}"></textarea>
+      <button type="button" class="agent-primario agent-solo-icona" data-action="inviaSms"
+              title="{{localize 'CPRX.Invia'}}"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================== NUOVO GRUPPO ======================= --}}
+  {{#if vistaNuovoGruppo}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="gruppoAnnulla">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.GruppoNome"}}</span>
+      <input type="text" name="gruppoNome" value=""
+             placeholder="{{localize 'CPRX.GruppoNomeEsempio'}}" />
+    </label>
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.GruppoMembri"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    {{#if haCandidati}}
+    <ul class="agent-elenco agent-scelte">
+      {{#each candidati}}
+      <li class="agent-voce">
+        <label class="agent-scelta">
+          <input type="checkbox" name="gruppoM-{{this.numero}}" />
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+        </label>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.GruppoRubricaVuota"}}</p>
+    {{/if}}
+
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.GruppoAltriNumeri"}}</span>
+      <input type="text" name="gruppoNumeri" value="" placeholder="555-0142, 555-9917" />
+    </label>
+
+    {{#if haEsclusi}}
+    <p class="agent-nota">{{localize "CPRX.GruppoNienteCoperti"}}</p>
+    {{/if}}
+
+    <div class="agent-scrivi">
+      <textarea name="gruppoTesto" rows="2"
+                placeholder="{{localize 'CPRX.GruppoPrimoMessaggio'}}"></textarea>
+      <button type="button" class="agent-primario agent-solo-icona" data-action="gruppoCrea"
+              title="{{localize 'CPRX.GruppoCrea'}}"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- ============================ TELEFONO ========================= --}}
+  {{#if vistaTelefono}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      <span class="agent-saldo">{{numeroMio}}</span>
+    </header>
+
+    {{!-- ------------------------- tastierino ------------------------- --}}
+    {{!-- Il display e' un campo, non una scritta: il numero si compone col
+          tastierino ma si puo' anche scrivere a mano, e il tastierino lo
+          rilegge prima di aggiungere una cifra (trappola 11). --}}
+    {{#if schedaTastierino}}
+    <div class="agent-display">
+      <input type="text" name="composto" value="{{composto}}" placeholder="— — —" />
+      <span class="agent-display-nota">{{numeroInfo}}</span>
+    </div>
+
+    <div class="agent-tastierino">
+      {{#each tasti}}
+      <button type="button" class="agent-tasto" data-action="cifra" data-cifra="{{this.cifra}}">
+        <span class="agent-tasto-cifra">{{this.cifra}}</span>
+        <span class="agent-tasto-lettere">{{this.lettere}}</span>
+      </button>
+      {{/each}}
+    </div>
+
+    {{!-- Il verde sta in mezzo, la cancellazione di fianco: il vuoto a
+          sinistra serve a tenerlo in centro, non e' un buco. --}}
+    <div class="agent-chiama-riga">
+      <span class="agent-chiama-vuoto" aria-hidden="true"></span>
+      {{#if puoScrivere}}
+      <button type="button" class="agent-tondo agent-tondo-verde" data-action="chiama"
+              title="{{localize 'CPRX.Chiama'}}" aria-label="{{localize 'CPRX.Chiama'}}">
+        <i class="fa-solid fa-phone"></i>
+      </button>
+      {{/if}}
+      <button type="button" class="agent-tondo agent-tondo-nudo" data-action="cancellaCifra"
+              title="{{localize 'CPRX.Cancella'}}" aria-label="{{localize 'CPRX.Cancella'}}">
+        <i class="fa-solid fa-delete-left"></i>
+      </button>
+    </div>
+    {{/if}}
+
+    {{!-- -------------------------- recenti --------------------------- --}}
+    {{#if schedaRecenti}}
+    {{#if haRecenti}}
+    <ul class="agent-elenco">
+      {{#each recenti}}
+      <li class="agent-voce {{#if this.persa}}persa{{/if}}">
+        <i class="agent-recente-icona {{this.icona}}"></i>
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          <span class="agent-voce-sotto">
+            {{this.quando}}{{#if this.etichettaNumero}} · {{this.etichettaNumero}}{{/if}}
+          </span>
+        </div>
+        {{#unless this.gruppo}}
+        <button type="button" class="agent-solo-icona agent-tondo-piccolo" data-action="apriContatto"
+                data-numero="{{this.numero}}" title="{{localize 'CPRX.SchedaContatto'}}">
+          <i class="fa-solid fa-circle-info"></i>
+        </button>
+        {{#if ../puoScrivere}}
+        <button type="button" class="agent-solo-icona agent-tondo-piccolo acceso" data-action="chiama"
+                data-numero="{{this.numero}}" title="{{localize 'CPRX.Chiama'}}">
+          <i class="fa-solid fa-phone"></i>
+        </button>
+        {{/if}}
+        {{/unless}}
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.NessunaChiamata"}}</p>
+    {{/if}}
+    {{/if}}
+
+    {{!-- -------------------- contatti e preferiti --------------------
+          Una lista sola per due linguette: i preferiti sono contatti
+          filtrati, non un'altra cosa. --}}
+    {{#if mostraRubrica}}
+    {{#if puoScrivere}}
+    {{#unless soloPreferiti}}
+    <div class="agent-cerca">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" name="ricerca" value="{{ricerca}}"
+             placeholder="{{localize 'CPRX.Cerca'}}" />
+    </div>
+    {{/unless}}
+    {{/if}}
+
+    {{#if haRubrica}}
+    <ul class="agent-elenco">
+      {{#each rubrica}}
+      <li class="agent-voce">
+        <span class="agent-tondo-iniziali">{{this.iniziale}}</span>
+        <button type="button" class="agent-voce-apri" data-action="apriContatto"
+                data-numero="{{this.numero}}">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          {{#if this.sotto}}<span class="agent-voce-sotto">{{this.sotto}}</span>{{/if}}
+        </button>
+        {{#if this.chiamabile}}
+        {{#if ../puoScrivere}}
+        <button type="button" class="agent-solo-icona agent-tondo-piccolo acceso" data-action="chiama"
+                data-numero="{{this.numero}}" title="{{localize 'CPRX.Chiama'}}">
+          <i class="fa-solid fa-phone"></i>
+        </button>
+        {{/if}}
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="agent-vuoto">{{vuotoRubrica}}</p>
+    {{/if}}
+
+    {{#if puoScrivere}}
+    {{#unless soloPreferiti}}
+    <button type="button" class="agent-cta scarica" data-action="nuovo" data-app="contatti">
+      <i class="fa-solid fa-user-plus"></i> {{localize "CPRX.Nuovo"}}
+    </button>
+    {{/unless}}
+    {{/if}}
+    {{/if}}
+
+    {{!-- --------------------- scheda di un contatto ------------------- --}}
+    {{#if schedaContatto}}
+    <div class="agent-contatto">
+      <span class="agent-tondo-iniziali grande">{{contatto.iniziale}}</span>
+      <span class="agent-contatto-nome">{{contatto.nome}}</span>
+      {{#if contatto.sotto}}<span class="agent-etichetta">{{contatto.sotto}}</span>{{/if}}
+
+      <div class="agent-contatto-comandi">
+        {{#if puoScrivere}}
+        {{!-- Chiamare e scrivere funzionano anche su un numero coperto: il
+              collegamento passa da `data-numero`, che non si legge. --}}
+        <button type="button" class="agent-comando-tondo" data-action="chiama"
+                data-numero="{{contatto.numero}}">
+          <span class="agent-comando-cerchio"><i class="fa-solid fa-phone"></i></span>
+          <span class="agent-etichetta">{{localize "CPRX.Chiama"}}</span>
+        </button>
+        <button type="button" class="agent-comando-tondo" data-action="apriConversazione"
+                data-numero="{{contatto.numero}}">
+          <span class="agent-comando-cerchio secondo"><i class="fa-solid fa-comment-sms"></i></span>
+          <span class="agent-etichetta">{{localize "CPRX.Scrivi"}}</span>
+        </button>
+        {{/if}}
+        {{#if contatto.inRubrica}}
+        <button type="button" class="agent-comando-tondo" data-action="contattoPreferito"
+                data-numero="{{contatto.numero}}">
+          <span class="agent-comando-cerchio stella {{#if contatto.preferito}}acceso{{/if}}">
+            <i class="fa-solid fa-star"></i>
+          </span>
+          <span class="agent-etichetta">{{localize "CPRX.Preferito"}}</span>
+        </button>
+        {{/if}}
+      </div>
+
+      {{#if contatto.righe}}
+      <ul class="agent-elenco">
+        {{#each contatto.righe}}
+        <li class="agent-voce">
+          <span class="agent-etichetta">{{this.etichetta}}</span>
+          <span class="agent-riga-valore">{{this.valore}}</span>
+        </li>
+        {{/each}}
+      </ul>
+      {{/if}}
+
+      {{#if contatto.note}}
+      <p class="agent-nota">{{contatto.note}}</p>
+      {{/if}}
+
+      {{#if contatto.haStorico}}
+      <div class="agent-sezione-riga">
+        <span class="agent-etichetta">{{localize "CPRX.ContattoCronologia"}}</span>
+        <span class="agent-filetto"></span>
+      </div>
+      <ul class="agent-elenco">
+        {{#each contatto.storico}}
+        <li class="agent-voce {{#if this.persa}}persa{{/if}}">
+          <i class="agent-recente-icona {{this.icona}}"></i>
+          <div class="agent-voce-testo">
+            <span class="agent-voce-titolo">{{this.etichetta}}</span>
+          </div>
+          <span class="agent-voce-sotto">{{this.quando}}</span>
+        </li>
+        {{/each}}
+      </ul>
+      {{/if}}
+
+      <div class="agent-riga">
+        <button type="button" class="agent-cta scarica" data-action="chiudiContatto">
+          {{localize "CPRX.Indietro"}}
+        </button>
+        {{#if puoScrivere}}
+        {{#unless contatto.coperto}}
+        {{#if contatto.inRubrica}}
+        <button type="button" class="agent-cta" data-action="modifica"
+                data-app="contatti" data-id="{{contatto.id}}">{{localize "CPRX.Modifica"}}</button>
+        {{else}}
+        <button type="button" class="agent-cta" data-action="salvaContatto"
+                data-numero="{{contatto.numero}}">{{localize "CPRX.SalvaContatto"}}</button>
+        {{/if}}
+        {{/unless}}
+        {{/if}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{!-- Le quattro linguette in basso, come su un telefono. --}}
+    <nav class="agent-linguette-basso">
+      {{#each telefonoSchede}}
+      <button type="button" class="agent-linguetta-basso {{#if this.attiva}}attiva{{/if}}"
+              data-action="telefonoScheda" data-scheda="{{this.chiave}}">
+        <i class="{{this.icona}}"></i>
+        <span>{{this.etichetta}}</span>
+        {{#if this.conteggio}}<b class="agent-conta">{{this.conteggio}}</b>{{/if}}
+      </button>
+      {{/each}}
+    </nav>
+  </div>
+  {{/if}}
+
+  {{!-- ======================== DIGITAL GLADIATOR ==================== --}}
+  {{#if vistaGladiator}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      <span class="agent-saldo">{{statistica}} {{miaStatistica}}</span>
+    </header>
+
+    <p class="agent-installata-testo">{{descrizione}}</p>
+
+    {{#if agentInterno}}
+    <p class="agent-allarme-riga">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{localize "CPRX.AvvisoAgentInterno"}}
+    </p>
+    {{/if}}
+
+    {{#if sfida}}
+      {{#if sfida.inArrivo}}
+      <div class="agent-sfida {{#unless sfida.amichevole}}mortale{{/unless}}">
+        <span class="agent-chiamata-stato">{{localize "CPRX.SfidaRicevuta"}} · {{sfida.etichettaModo}}</span>
+        <span class="agent-chiamata-nome">{{sfida.nome}}</span>
+        {{#if sfida.posta}}<span class="agent-arena-posta">{{sfida.posta}}</span>{{/if}}
+        {{#unless sfida.amichevole}}
+        <span class="agent-arena-avviso">{{localize "CPRX.ArenaAvviso"}}</span>
+        {{/unless}}
+        {{#if puoScrivere}}
+        <div class="agent-modulo-azioni">
+          <button type="button" class="agent-primario" data-action="accettaSfida">
+            <i class="fa-solid fa-gamepad"></i> {{localize "CPRX.Accetta"}}
+          </button>
+          <button type="button" data-action="rifiutaSfida">{{localize "CPRX.Rifiuta"}}</button>
+        </div>
+        {{/if}}
+      </div>
+      {{else}}
+      <div class="agent-sfida">
+        <span class="agent-chiamata-stato">{{localize "CPRX.SfidaInviata"}} · {{sfida.etichettaModo}}</span>
+        <span class="agent-chiamata-nome">{{sfida.nome}}</span>
+        {{#if sfida.posta}}<span class="agent-arena-posta">{{sfida.posta}}</span>{{/if}}
+        {{#if puoScrivere}}
+        <button type="button" data-action="rifiutaSfida">{{localize "CPRX.Annulla"}}</button>
+        {{/if}}
+      </div>
+      {{/if}}
+    {{else}}
+
+      {{!-- La scheda del gladiatore: un Solitario di Grado 4 a parte, non
+            il personaggio che lo pilota. --}}
+      {{#if gladiatore}}
+      <div class="agent-gladiatore">
+        <img class="agent-gladiatore-ritratto" src="{{gladiatore.immagine}}" alt="" />
+        <div class="agent-gladiatore-testo">
+          <span class="agent-gladiatore-nome">{{gladiatore.nome}}</span>
+          <div class="agent-gladiatore-stat">
+            <span><b>{{gladiatore.ferite}}</b> {{localize "CPRX.ArenaFerite"}}</span>
+            <span><b>{{gladiatore.armatura}}</b> {{localize "CPRX.ArenaArmatura"}}</span>
+            <span><b>{{gladiatore.ref}}</b> REF</span>
+          </div>
+        </div>
+        <button type="button" class="agent-solo-icona" data-action="gladiatoreApri"
+                title="{{localize 'CPRX.ArenaApriScheda'}}">
+          <i class="fa-solid fa-up-right-from-square"></i>
+        </button>
+      </div>
+
+      <div class="agent-arena-bilancio">
+        <div class="agent-cella"><span class="agent-cella-valore">{{bilancio.duelli}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.ArenaDuelli"}}</span></div>
+        <div class="agent-cella"><span class="agent-cella-valore">{{bilancio.vinti}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.ArenaVinti"}}</span></div>
+        <div class="agent-cella"><span class="agent-cella-valore">{{bilancio.persi}}</span>
+          <span class="agent-cella-nome">{{localize "CPRX.ArenaPersi"}}</span></div>
+      </div>
+      {{else}}
+      <p class="agent-vuoto">{{localize "CPRX.GladiatoreMancante"}}</p>
+      {{/if}}
+
+      {{#if puoScrivere}}
+      <div class="agent-sezione-riga">
+        <span class="agent-etichetta">{{localize "CPRX.ArenaScheda"}}</span>
+        <span class="agent-filetto"></span>
+      </div>
+      <div class="agent-riga">
+        <select name="gladiatore">
+          <option value="">{{localize "CPRX.ArenaNessuno"}}</option>
+          {{#each candidati}}
+          <option value="{{this.id}}" {{#if this.scelto}}selected{{/if}}>{{this.nome}}</option>
+          {{/each}}
+        </select>
+        <button type="button" class="agent-solo-icona" data-action="gladiatoreScegli"
+                title="{{localize 'CPRX.Salva'}}"><i class="fa-solid fa-floppy-disk"></i></button>
+      </div>
+
+      {{#if gladiatore}}
+      <div class="agent-sezione-riga">
+        <span class="agent-etichetta">{{localize "CPRX.SfidaNumero"}}</span>
+        <span class="agent-filetto"></span>
+      </div>
+      <div class="agent-riga">
+        <input type="text" name="composto" value="{{composto}}" placeholder="{{localize 'CPRX.Numero'}}" />
+      </div>
+      <div class="agent-riga">
+        <input type="text" name="posta" value="{{posta}}"
+               placeholder="{{localize 'CPRX.ArenaPostaNota'}}" />
+      </div>
+
+      {{!-- Due modi: l'amichevole non brucia niente, la classificata si'. --}}
+      <div class="agent-modulo-azioni">
+        <button type="button" data-action="sfida" data-modo="amichevole">
+          <i class="fa-solid fa-hand-fist"></i> {{localize "CPRX.ArenaAmichevole"}}
+        </button>
+        <button type="button" class="agent-rosso" data-action="sfida" data-modo="classificata">
+          <i class="fa-solid fa-skull"></i> {{localize "CPRX.ArenaClassificata"}}
+        </button>
+      </div>
+      <p class="agent-nota">{{localize "CPRX.ArenaAvviso"}}</p>
+      {{/if}}
+      {{/if}}
+
+      {{#if haStorico}}
+      <div class="agent-sezione-riga">
+        <span class="agent-etichetta">{{localize "CPRX.ArenaStorico"}}</span>
+        <span class="agent-filetto"></span>
+      </div>
+      <ul class="agent-elenco">
+        {{#each storico}}
+        <li class="agent-arena-riga {{#if this.vinto}}vinta{{/if}}">
+          <div class="agent-voce-testo">
+            <span class="agent-voce-titolo">{{this.avversario}}</span>
+            <span class="agent-voce-sotto">{{this.etichettaModo}} · {{this.quando}} · {{this.round}} round</span>
+          </div>
+          <span class="agent-arena-esito">
+            {{#if this.vinto}}{{localize "CPRX.ArenaVinta"}}{{else}}{{localize "CPRX.ArenaPersa"}}{{/if}}
+          </span>
+        </li>
+        {{/each}}
+      </ul>
+      {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================== 4TIFY ========================== --}}
+  {{#if vistaFortify}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <p class="agent-installata-testo">{{descrizione}}</p>
+
+    {{#if marcatura}}
+    <div class="agent-sfida">
+      <span class="agent-chiamata-stato">{{localize "CPRX.FortifyPronta"}}</span>
+      <span class="agent-chiamata-nome">{{marcatura.bersaglio}}</span>
+      <span class="agent-chiamata-numero">{{marcatura.quando}}</span>
+      {{#if puoScrivere}}
+      <div class="agent-modulo-azioni">
+        <button type="button" class="agent-primario" data-action="fortifyUsa">
+          <i class="fa-solid fa-dice-d6"></i> {{localize "CPRX.FortifyUsa"}}
+        </button>
+        <button type="button" data-action="fortifyScarta">{{localize "CPRX.Scarta"}}</button>
+      </div>
+      {{/if}}
+    </div>
+    {{else}}
+      {{#if puoScrivere}}
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.FortifyBersaglio"}}</span>
+        <input type="text" name="bersaglio" value="{{bersaglio}}"
+               placeholder="{{localize 'CPRX.FortifyEsempio'}}" />
+      </label>
+      <button type="button" class="agent-primario agent-conferma" data-action="fortifyScandisci">
+        <i class="fa-solid fa-magnifying-glass-chart"></i> {{localize "CPRX.FortifyScandisci"}}
+      </button>
+      {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- =============================== NCPD ========================= --}}
+  {{#if vistaNcpd}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{!-- Terminale di consultazione, e basta. Il casellario si compila
+          dalla console del master: dall'Agent di un personaggio non si
+          scheda nessuno, nemmeno se a tenerlo in mano e' il master. --}}
+    {{#if scheda}}
+    <div class="agent-modulo">
+      <div class="agent-fascicolo">
+        <span class="agent-fascicolo-nome">{{scheda.nome}}</span>
+        {{#if scheda.alias}}<span class="agent-fascicolo-alias">«{{scheda.alias}}»</span>{{/if}}
+
+        {{#if scheda.taglia}}
+        <div class="agent-fascicolo-riga">
+          <span class="agent-campo-nome">{{localize "CPRX.NcpdTaglia"}}</span>
+          <span class="agent-fascicolo-taglia">{{scheda.taglia}} eb</span>
+        </div>
+        {{/if}}
+        {{#if scheda.mandati}}
+        <div class="agent-fascicolo-riga">
+          <span class="agent-campo-nome">{{localize "CPRX.NcpdMandati"}}</span>
+          <span>{{scheda.mandati}}</span>
+        </div>
+        {{/if}}
+        {{#if scheda.precedenti}}
+        <div class="agent-fascicolo-riga">
+          <span class="agent-campo-nome">{{localize "CPRX.NcpdPrecedenti"}}</span>
+          <span>{{scheda.precedenti}}</span>
+        </div>
+        {{/if}}
+      </div>
+
+      <button type="button" data-action="schedaAnnulla">
+        <i class="fa-solid fa-chevron-left"></i> {{localize "CPRX.Annulla"}}
+      </button>
+    </div>
+    {{else}}
+
+    {{#if vuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.NcpdSchedarioVuoto"}}</p>
+    {{else}}
+    <ul class="agent-elenco">
+      {{#each voci}}
+      <li class="agent-voce">
+        <button type="button" class="agent-voce-apri" data-action="schedaApri" data-id="{{this.id}}">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          {{#if this.riga}}<span class="agent-voce-sotto">{{this.riga}}</span>{{/if}}
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================= MEDSCAN ======================== --}}
+  {{#if vistaMedscan}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      {{#if eddiesNoti}}<span class="agent-saldo">{{eddies}} eb</span>{{/if}}
+    </header>
+
+    {{#if abbonato}}
+    <p class="agent-nota agent-abbonato">
+      <i class="fa-solid fa-star"></i> {{localize "CPRX.MedscanAbbonato"}}
+    </p>
+    {{/if}}
+
+    {{!-- Il consulto in corso dice a cosa serve, non solo quanto dura:
+          un timer da solo non aiuta nessuno al tavolo. --}}
+    {{#if consulto}}
+    <div class="agent-consulto">
+      <div class="agent-consulto-alto">
+        <span class="agent-etichetta">{{localize "CPRX.MedscanInCorso"}}</span>
+        <span class="agent-consulto-tempo">{{consulto.restano}} min</span>
+      </div>
+      <span class="agent-consulto-nome">{{consulto.etichetta}}</span>
+      <span class="agent-consulto-bonus">+{{consulto.bonus}}</span>
+      <p class="agent-consulto-usi">{{consulto.usi}}</p>
+      {{#if consulto.per}}
+      <span class="agent-etichetta">{{localize "CPRX.MedscanPagatoDa"}} {{consulto.per}}</span>
+      {{/if}}
+    </div>
+    {{/if}}
+
+    {{#if puoScrivere}}
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.MedscanPer"}}</span>
+      <input type="text" name="perNumero" value="" placeholder="{{localize 'CPRX.MedscanPerNota'}}" />
+    </label>
+
+    <div class="agent-listino">
+      {{#each livelli}}
+      <div class="agent-listino-voce">
+        <div class="agent-listino-testa">
+          <span class="agent-listino-nome">{{this.etichetta}}</span>
+          <span class="agent-listino-prezzo">
+            {{#if this.prezzo}}{{this.prezzo}} eb{{else}}{{localize "CPRX.MedscanGratis"}}{{/if}}
+          </span>
+        </div>
+        <p class="agent-listino-usi">{{this.usi}}</p>
+        <div class="agent-listino-piede">
+          <span class="agent-etichetta">+{{this.bonus}} · {{this.ore}} h</span>
+          <button type="button" class="agent-primario" data-action="medscanRichiedi"
+                  data-livello="{{this.chiave}}" {{#if this.troppoCaro}}disabled{{/if}}>
+            <i class="fa-solid fa-kit-medical"></i> {{localize "CPRX.MedscanCollega"}}
+          </button>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================ ZIGGURAT ======================== --}}
+  {{#if vistaZiggurat}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{!-- Lo sportello unico: si sfoglia per categoria e si cerca. Lo
+          compila il master dalla sua console. --}}
+    <div class="agent-riga">
+      <input type="text" name="ricerca" value="{{ricerca}}"
+             placeholder="{{localize 'CPRX.ZigguratCerca'}}" />
+      <button type="button" class="agent-solo-icona" data-action="zigguratCerca"
+              title="{{localize 'CPRX.Cerca'}}"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </div>
+
+    <div class="agent-pacchetti">
+      <button type="button" class="agent-linguetta {{#unless filtroAttivo}}attiva{{/unless}}"
+              data-action="zigguratCategoria" data-categoria="">
+        {{localize "CPRX.TutteLeCategorie"}}
+      </button>
+      {{#each categorie}}
+      <button type="button" class="agent-linguetta {{#if this.attiva}}attiva{{/if}}"
+              data-action="zigguratCategoria" data-categoria="{{this.chiave}}">
+        {{this.etichetta}} {{#if this.conteggio}}<b>{{this.conteggio}}</b>{{/if}}
+      </button>
+      {{/each}}
+    </div>
+
+    {{#if dbVuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.ZigguratDbVuoto"}}</p>
+    {{else}}
+      {{#if vuoto}}
+      <p class="agent-vuoto">{{localize "CPRX.NienteInVetrina"}}</p>
+      {{else}}
+      <ul class="agent-elenco">
+        {{#each voci}}
+        <li class="agent-voce-zig">
+          <div class="agent-zig-alto">
+            <span class="agent-voce-titolo">{{this.nome}}</span>
+            <span class="agent-etichetta">{{this.categoria}}</span>
+          </div>
+          {{#if this.zona}}<span class="agent-voce-sotto">{{this.zona}}</span>{{/if}}
+          {{#if this.testo}}<p class="agent-zig-testo">{{this.testo}}</p>{{/if}}
+        </li>
+        {{/each}}
+      </ul>
+      {{/if}}
+    {{/if}}
+
+    {{#if puoScrivere}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.ZigguratCitta"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-riga">
+      <input type="text" name="citta" value="{{citta}}" placeholder="Night City" />
+      <button type="button" class="agent-solo-icona" data-action="zigguratSalva"
+              title="{{localize 'CPRX.Salva'}}"><i class="fa-solid fa-floppy-disk"></i></button>
+    </div>
+
+    {{#if attiva}}
+    <button type="button" class="agent-primario agent-conferma" data-action="zigguratConsulta">
+      <i class="fa-solid fa-city"></i> {{localize "CPRX.ZigguratConsulta"}} (+{{bonus}})
+    </button>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================ VETRINA ========================= --}}
+  {{#if vistaNegozio}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      {{#if eddiesNoti}}<span class="agent-saldo">{{eddies}} eb</span>{{/if}}
+    </header>
+
+    {{!-- La ricerca sta sempre in cima e funziona anche senza aver scelto
+          una categoria: prima bisognava aprire un menu per fare qualunque
+          cosa. --}}
+    <div class="agent-cerca">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" name="ricerca" value="{{ricerca}}" placeholder="{{localize 'CPRX.Cerca'}}" />
+      <button type="button" class="agent-solo-icona" data-action="cerca" title="{{localize 'CPRX.Cerca'}}">
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    {{#if eddiesNoti}}
+    <div class="agent-pillole">
+      <button type="button" class="agent-pillola {{#unless soloAbbordabili}}attiva{{/unless}}"
+              data-action="abbordabili" data-tutti="1">{{localize "CPRX.FiltroTutte"}}</button>
+      <button type="button" class="agent-pillola {{#if soloAbbordabili}}attiva{{/if}}"
+              data-action="abbordabili">{{localize "CPRX.SoloAbbordabili"}}</button>
+    </div>
+    {{/if}}
+
+    {{#if alBanco}}
+    {{!-- Banco: le categorie come mattonelle, non come trenta linguette. --}}
+    <div class="agent-banco">
+      {{#each categorie}}
+      <button type="button" class="agent-reparto" data-action="scegliCategoria" data-tipo="{{this.tipo}}">
+        <span class="agent-reparto-nome">{{this.etichetta}}</span>
+        <span class="agent-reparto-conta">{{this.conteggio}}</span>
+      </button>
+      {{/each}}
+    </div>
+    {{else}}
+
+    {{!-- Briciola: dove sei e come torni indietro. --}}
+    <div class="agent-briciola">
+      <button type="button" class="agent-briciola-su" data-action="scegliCategoria" data-tipo="">
+        <i class="fa-solid fa-chevron-left"></i>
+        <span>{{localize "CPRX.TutteLeCategorie"}}</span>
+      </button>
+      {{#if categoriaAperta}}
+      <span class="agent-briciola-qui">{{categoriaAperta}}</span>
+      {{/if}}
+      {{#if sottoAperta}}
+      <button type="button" class="agent-briciola-filtro" data-action="scegliSotto" data-sotto="">
+        {{sottoAperta}} <i class="fa-solid fa-xmark"></i>
+      </button>
+      {{/if}}
+    </div>
+
+    {{#if haSotto}}
+    <div class="agent-pacchetti agent-sotto">
+      {{#each sottocategorie}}
+      <button type="button" class="agent-linguetta {{#if this.attiva}}attiva{{/if}}"
+              data-action="scegliSotto" data-sotto="{{this.valore}}">{{this.etichetta}} <b>{{this.conteggio}}</b></button>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if vuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.NienteInVetrina"}}</p>
+    {{else}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{quantiMostrati}} / {{totale}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    {{/if}}
+
+    {{!-- Una riga per articolo dentro una scheda sola: il riquadro
+          dell'immagine a sinistra, prezzo e disponibilita' incolonnati a
+          destra. La disponibilita' sta sotto il prezzo perche' sono la
+          stessa domanda: quanto costa e se lo trovi. --}}
+    <ul class="agent-elenco agent-vetrina">
+      {{#each articoli}}
+      <li class="agent-voce agent-articolo {{#if this.troppoCaro}}caro{{/if}}">
+        <span class="agent-articolo-foto">
+          {{#if this.immagine}}<img src="{{this.immagine}}" alt="" />{{else}}IMG{{/if}}
+        </span>
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          <span class="agent-voce-sotto">{{this.etichettaTipo}} · {{this.fonte}}</span>
+        </div>
+        <span class="agent-articolo-conto">
+          <span class="agent-articolo-prezzo">{{this.prezzoTesto}}</span>
+          {{#if this.disponibilita}}
+          <span class="agent-articolo-scorta">{{this.disponibilita}}</span>
+          {{/if}}
+        </span>
+        {{#if ../puoScrivere}}
+        <button type="button" class="agent-solo-icona agent-tondo-piccolo" data-action="compra" data-uuid="{{this.uuid}}"
+                title="{{localize 'CPRX.Compra'}}"
+                {{#unless this.acquistabile}}disabled{{/unless}}{{#if this.troppoCaro}} disabled{{/if}}>
+          <i class="fa-solid fa-cart-plus"></i>
+        </button>
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+
+    {{#if troncato}}
+    <p class="agent-vuoto">{{localize "CPRX.TroppiRisultati"}}</p>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================= IMPOSTAZIONI ======================= --}}
+  {{#if vistaImpostazioni}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="fa-solid fa-gear"></i> {{localize "CPRX.Impostazioni"}}</h3>
+    </header>
+
+    {{!-- Chi sei, in cima: e' la prima riga delle impostazioni di qualunque
+          telefono, e qui era l'unica schermata dove non c'era. --}}
+    <div class="agent-identita-scheda">
+      <span class="agent-tondo-iniziali">{{iniziale}}</span>
+      <span class="agent-identita-testo">
+        <span class="agent-voce-titolo">{{identitaNome}}</span>
+        <span class="agent-etichetta">{{identitaRiga}}</span>
+      </span>
+    </div>
+
+    <h4 class="agent-sezione">{{localize "CPRX.Tema"}}</h4>
+    <div class="agent-temi">
+      {{#each temi}}
+      <button type="button" class="agent-tema macchia-{{this.chiave}} {{#if this.attivo}}attivo{{/if}}"
+              data-action="scegliTema" data-tema="{{this.chiave}}">
+        <span class="agent-tema-macchia"></span>
+        <span class="agent-tema-nome">{{this.etichetta}}</span>
+      </button>
+      {{/each}}
+    </div>
+
+    {{!-- Lo sfondo: una lista chiusa, spedita col modulo. Qui non si carica
+          niente — vale ancora la regola per cui dall'Agent nel mondo non
+          entrano immagini. --}}
+    <h4 class="agent-sezione">{{localize "CPRX.Sfondo"}}</h4>
+    <div class="agent-riga-stato">
+      <span class="agent-riga-nome">{{localize "CPRX.SfondoNota"}}</span>
+      <span class="agent-riga-valore">{{sfondoNome}}</span>
+    </div>
+    <div class="agent-sfondi">
+      {{#each sfondi}}
+      <button type="button" class="agent-sfondo-scelta {{#if this.scelto}}scelto{{/if}} {{#unless this.url}}vuoto{{/unless}}"
+              data-action="sfondo" data-sfondo="{{this.chiave}}"
+              title="{{this.etichetta}}" aria-label="{{this.etichetta}}"
+              {{#if this.url}}style="background-image: url('{{this.url}}')"{{/if}}
+              {{#unless ../puoScrivere}}disabled{{/unless}}>
+        <span class="agent-sfondo-nome">{{this.etichetta}}</span>
+        {{#if this.scelto}}<i class="fa-solid fa-check agent-sfondo-spunta"></i>{{/if}}
+      </button>
+      {{/each}}
+    </div>
+
+    <h4 class="agent-sezione">{{localize "CPRX.NumeroAgent"}}</h4>
+    <div class="agent-riga">
+      <input type="text" value="{{numero}}" readonly />
+      {{#if puoScrivere}}
+      <button type="button" class="agent-solo-icona" data-action="rigeneraNumero"
+              title="{{localize 'CPRX.RigeneraNumero'}}"><i class="fa-solid fa-arrows-rotate"></i></button>
+      {{/if}}
+    </div>
+
+    <label class="agent-interruttore">
+      <input type="checkbox" name="agentInterno" {{#if agentInterno}}checked{{/if}}
+             {{#unless puoScrivere}}disabled{{/unless}} />
+      <span class="agent-leva"></span>
+      <span class="agent-interruttore-nome">{{localize "CPRX.AgentInterno"}}</span>
+    </label>
+
+    <label class="agent-interruttore">
+      <input type="checkbox" name="gps" {{#if gps}}checked{{/if}}
+             {{#unless puoScrivere}}disabled{{/unless}} />
+      <span class="agent-leva"></span>
+      <span class="agent-interruttore-nome">{{localize "CPRX.TracciamentoGps"}}</span>
+    </label>
+
+    <p class="agent-nota">{{localize "CPRX.NumeroNascostoNota"}}</p>
+
+    {{!-- Handle e nome vero. Il saluto usa l'uno o l'altro: non c'e' un
+          terzo nome da inventare. --}}
+    <h4 class="agent-sezione">{{localize "CPRX.ComeChiamarti"}}</h4>
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.CampoHandle"}}</span>
+      <input type="text" name="handle" value="{{handle}}" placeholder="{{nomeAttore}}"
+             {{#unless puoScrivere}}disabled{{/unless}} />
+    </label>
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.CampoNomeVero"}}</span>
+      <input type="text" name="nomeVero" value="{{nomeVero}}" placeholder="{{nomeAttore}}"
+             {{#unless puoScrivere}}disabled{{/unless}} />
+    </label>
+    <label class="agent-interruttore">
+      <input type="checkbox" name="saluto" {{#unless salutoHandle}}checked{{/unless}}
+             {{#unless puoScrivere}}disabled{{/unless}} />
+      <span class="agent-leva"></span>
+      <span class="agent-interruttore-nome">{{localize "CPRX.SalutoColNome"}}</span>
+    </label>
+
+    <h4 class="agent-sezione">{{localize "CPRX.Accento"}}</h4>
+    <input type="text" name="accento" value="{{accento}}" placeholder="#00d4a0" />
+
+    <button type="button" class="agent-primario agent-conferma" data-action="salvaPreferenze">
+      <i class="fa-solid fa-floppy-disk"></i> {{localize "CPRX.Salva"}}
+    </button>
+
+    <button type="button" class="agent-tasto-lungo" data-action="blocca">
+      {{localize "CPRX.BloccaDispositivo"}}
+    </button>
+
+    {{!-- Il ripristino riporta il telefono alla prima accensione: rifai il
+          setup da capo. Non tocca le App comprate ne' i soldi, che stanno
+          sulla scheda e non sul dispositivo. --}}
+    {{#if puoScrivere}}
+    <h4 class="agent-sezione">{{localize "CPRX.Ripristina"}}</h4>
+    <p class="agent-nota">{{localize "CPRX.RipristinaNota"}}</p>
+    <button type="button" class="agent-tasto-lungo agent-pericolo" data-action="ripristina">
+      {{localize "CPRX.RipristinaDispositivo"}}
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ===================== ELENCHI E MODULI ======================= --}}
+  {{!-- ==================== ASK ALEX ANYTHING ======================= --}}
+  {{#if vistaAlex}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-cerca">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" name="ricerca" value="{{ricerca}}"
+             placeholder="{{localize 'CPRX.AlexCerca'}}" />
+      <button type="button" class="agent-solo-icona" data-action="alexCerca"
+              title="{{localize 'CPRX.Cerca'}}"><i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    {{#if alexCercato}}
+    <div class="agent-eroe">
+      <span class="agent-etichetta acceso">{{localize "CPRX.AlexRiassunto"}}</span>
+      <span class="agent-eroe-titolo">
+        {{localize "CPRX.AlexTrovate"}} · {{alexQuante}}
+      </span>
+      {{#if alexFonti}}<span class="agent-etichetta">{{alexFonti}}</span>{{/if}}
+    </div>
+    {{/if}}
+
+    {{#unless alexHaDb}}
+    <p class="agent-vuoto">{{localize "CPRX.AlexDbVuoto"}}</p>
+    {{/unless}}
+
+    {{#if alexRisultati}}
+    <ul class="agent-elenco">
+      {{#each alexRisultati}}
+      <li class="agent-voce">
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          {{#if this.riga}}<span class="agent-voce-sotto">{{this.riga}}</span>{{/if}}
+          {{#if this.testo}}<span class="agent-voce-corpo">{{this.testo}}</span>{{/if}}
+        </div>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+      {{#if alexCercato}}<p class="agent-vuoto">{{localize "CPRX.AlexNiente"}}</p>{{/if}}
+    {{/if}}
+
+    {{#if alexTroppi}}<p class="agent-nota">{{localize "CPRX.TroppiRisultati"}}</p>{{/if}}
+
+    {{#if puoScrivere}}
+    <button type="button" class="agent-cta" data-action="alexTira">
+      {{localize "CPRX.AlexTira"}} · +{{alexBonus}}
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================= ZPOST =========================== --}}
+  {{#if vistaZpost}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona"
+              data-action="{{#if zpostAperta}}zpostChiudi{{else}}home{{/if}}">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{#if zpostAperta}}
+    <div class="agent-eroe">
+      <span class="agent-etichetta acceso">{{zpostAperta.mittente}}</span>
+      <span class="agent-eroe-titolo">{{zpostAperta.oggetto}}</span>
+      <span class="agent-etichetta">{{zpostAperta.quando}}</span>
+    </div>
+
+    <p class="agent-lettera">{{zpostAperta.testo}}</p>
+
+    {{#if puoScrivere}}
+    {{#unless zpostAperta.uscente}}
+    <button type="button" class="agent-cta" data-action="zpostRispondi"
+            data-numero="{{zpostAperta.numero}}">{{localize "CPRX.ZpostRispondi"}}</button>
+    {{/unless}}
+    {{/if}}
+    {{else}}
+
+    <div class="agent-pillole">
+      {{#each zpostLinguette}}
+      <button type="button" class="agent-pillola {{#if this.attiva}}attiva{{/if}}"
+              data-action="zpostLinguetta" data-scheda="{{this.chiave}}">{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    {{#if zpostVuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.ZpostVuoto"}}</p>
+    {{else}}
+    <ul class="agent-elenco">
+      {{#each zpostElenco}}
+      <li class="agent-voce agent-filo-riga">
+        <span class="agent-tondo-iniziali">{{this.iniziale}}</span>
+        <button type="button" class="agent-voce-apri" data-action="zpostApri" data-id="{{this.idVoce}}">
+          <span class="agent-filo-testata">
+            <span class="agent-voce-titolo">{{this.chi}}</span>
+            <span class="agent-filo-quando">{{this.quando}}</span>
+          </span>
+          <span class="agent-voce-sotto">{{this.oggetto}}</span>
+          <span class="agent-voce-corpo">{{this.anteprima}}</span>
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+
+    {{#if puoScrivere}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.ZpostScrivi"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-modulo">
+      <div class="agent-riga">
+        <input type="text" name="composto" value="{{composto}}"
+               placeholder="{{localize 'CPRX.Numero'}}" />
+        <input type="text" name="oggetto" placeholder="{{localize 'CPRX.ZpostOggetto'}}" />
+      </div>
+      <textarea name="testo" rows="4" placeholder="{{localize 'CPRX.ZpostTesto'}}"></textarea>
+      <button type="button" class="agent-cta" data-action="zpostInvia">
+        {{localize "CPRX.Invia"}}
+      </button>
+    </div>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================ GARDEN ========================== --}}
+  {{#if vistaGarden}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{#if gardenPuoScrivere}}
+    <div class="agent-modulo">
+      <textarea name="testo" rows="3" placeholder="{{localize 'CPRX.GardenScrivi'}}"></textarea>
+      <button type="button" class="agent-cta" data-action="gardenPubblica">
+        {{localize "CPRX.GardenPubblica"}}
+      </button>
+    </div>
+    {{/if}}
+
+    {{#if gardenVuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.GardenVuoto"}}</p>
+    {{else}}
+    <div class="agent-patch">
+      {{#each gardenVoci}}
+      <article class="agent-post">
+        <header>
+          <span class="agent-tondo-iniziali">{{this.iniziale}}</span>
+          <span class="agent-post-chi">
+            <span class="agent-voce-titolo">{{this.autore}}</span>
+            <span class="agent-etichetta">{{this.quando}}</span>
+          </span>
+        </header>
+        <p class="agent-post-testo">{{this.testo}}</p>
+        <footer>
+          <button type="button" class="agent-post-cuore {{#if this.mio}}acceso{{/if}}"
+                  data-action="gardenCuore" data-id="{{this.id}}">
+            <i class="fa-solid fa-heart"></i> {{this.cuori}}
+          </button>
+        </footer>
+      </article>
+      {{/each}}
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================ BANGME! ========================= --}}
+  {{#if vistaBangme}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-eroe agent-eroe-centro">
+      <span class="agent-etichetta">{{localize "CPRX.BangImporto"}}</span>
+      <span class="agent-conto-cifra">{{bangImporto}}</span>
+      {{#if eddiesNoti}}
+      <span class="agent-etichetta">{{localize "CPRX.RiepilogoEddies"}} · {{eddies}}</span>
+      {{/if}}
+    </div>
+
+    <div class="agent-pillole">
+      {{#each bangImporti}}
+      <button type="button" class="agent-pillola {{#if this.scelto}}attiva{{/if}}"
+              data-action="bangImporto" data-importo="{{this.valore}}">{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    {{#if puoScrivere}}
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.BangAltroImporto"}}</span>
+      <input type="number" name="importo" min="1" step="1" value="{{bangImporto}}" />
+    </label>
+    {{/if}}
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.BangDestinatari"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    {{#if bangVuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.NessunContatto"}}</p>
+    {{else}}
+    <ul class="agent-elenco">
+      {{#each bangDestinatari}}
+      <li class="agent-voce {{#if this.scelto}}scelto{{/if}}">
+        <span class="agent-tondo-iniziali">{{this.iniziale}}</span>
+        <button type="button" class="agent-voce-apri" data-action="bangDestinatario"
+                data-numero="{{this.numero}}">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          {{#if this.sotto}}<span class="agent-voce-sotto">{{this.sotto}}</span>{{/if}}
+        </button>
+        {{#if this.scelto}}<i class="fa-solid fa-circle-check agent-scelto-spia"></i>{{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+
+    {{#if puoScrivere}}
+    <button type="button" class="agent-cta {{#unless bangPronto}}scarica{{/unless}}"
+            data-action="bangInvia">{{bangEtichetta}}</button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ============================ HUSTOOL ========================= --}}
+  {{#if vistaHustool}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-eroe agent-eroe-centro">
+      <span class="agent-etichetta acceso">{{localize "CPRX.HusTitolo"}}</span>
+      <span class="agent-eroe-titolo">
+        {{localize "CPRX.HusRiga"}}
+      </span>
+      <span class="agent-etichetta">{{husMinuti}}′ · {{husPaga}} eb</span>
+    </div>
+
+    {{#if puoScrivere}}
+    <button type="button" class="agent-cta" data-action="husLavoretto">
+      {{localize "CPRX.HusVoglioIlCash"}}
+    </button>
+    {{/if}}
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.HusStorico"}}</span>
+      <span class="agent-filetto"></span>
+      {{#if husTotale}}<span class="agent-etichetta acceso">{{husTotale}} eb</span>{{/if}}
+    </div>
+
+    {{#if husVuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.HusVuoto"}}</p>
+    {{else}}
+    <ul class="agent-elenco">
+      {{#each husStorico}}
+      <li class="agent-voce {{#if this.male}}persa{{/if}}">
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          <span class="agent-voce-sotto">{{this.quando}}</span>
+        </div>
+        <span class="agent-movimento-cifra">{{this.pagaTesto}}</span>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================== ROACH RACE ======================== --}}
+  {{#if vistaRoach}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-eroe agent-eroe-centro">
+      <span class="agent-etichetta acceso">{{localize "CPRX.RoachMiglior"}}</span>
+      <span class="agent-conto-cifra">{{roachRecord}}</span>
+      <span class="agent-etichetta">{{localize "CPRX.RoachPartite"}} · {{roachPartite}}</span>
+    </div>
+
+    {{#if puoScrivere}}
+    <button type="button" class="agent-cta" data-action="roachGioca">
+      {{localize "CPRX.RoachGioca"}}
+    </button>
+    {{/if}}
+
+    {{#if roachGiocato}}
+    <div class="agent-righe">
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.RoachUltima"}}</span>
+        <span class="agent-riga-valore">{{roachUltima}}</span>
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if roachHaClassifica}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.RoachClassifica"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <ul class="agent-elenco">
+      {{#each roachClassifica}}
+      <li class="agent-voce {{#if this.io}}scelto{{/if}}">
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+        </div>
+        <span class="agent-movimento-cifra">{{this.record}}</span>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- =========================== WATCHBOX ========================= --}}
+  {{#if vistaWatchbox}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{#if watchInterno}}
+    <p class="agent-vuoto">{{localize "CPRX.WatchInterno"}}</p>
+    {{else}}
+
+    {{#if watchAttivo}}
+    <div class="agent-eroe">
+      <span class="agent-etichetta acceso">{{localize "CPRX.WatchAttiva"}}</span>
+      <span class="agent-eroe-titolo">{{watch.stanza}}</span>
+      <span class="agent-etichetta">{{watch.quando}}</span>
+    </div>
+
+    <div class="agent-righe">
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.WatchStanza"}}</span>
+        <span class="agent-riga-valore">{{watchLato}}×{{watchLato}} m</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.WatchElusione"}}</span>
+        <span class="agent-riga-valore">VD {{watchVd}}</span>
+      </div>
+    </div>
+
+    {{#if puoScrivere}}
+    <button type="button" class="agent-cta rossa" data-action="watchSpegni">
+      {{localize "CPRX.WatchSpegni"}}
+    </button>
+    {{/if}}
+    {{else}}
+    <div class="agent-eroe">
+      <span class="agent-etichetta acceso">{{localize "CPRX.WatchAttesa"}}</span>
+      <span class="agent-eroe-titolo">{{localize "CPRX.WatchDaPosare"}}</span>
+      <span class="agent-etichetta">{{watchLato}}×{{watchLato}} m · {{watchMinuti}}′</span>
+    </div>
+
+    {{#if puoScrivere}}
+    <label class="agent-campo">
+      <span class="agent-campo-nome">{{localize "CPRX.WatchStanza"}}</span>
+      <input type="text" name="bersaglio" value="{{watchStanza}}"
+             placeholder="{{localize 'CPRX.WatchEsempio'}}" />
+    </label>
+    <button type="button" class="agent-cta" data-action="watchAvvia">
+      {{localize "CPRX.WatchAvvia"}}
+    </button>
+    {{/if}}
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ========================= BRAINWASHER ======================== --}}
+  {{#if vistaBrainwasher}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-eroe">
+      <span class="agent-etichetta acceso">{{localize "CPRX.BwCiclo"}}</span>
+      <span class="agent-eroe-titolo">{{bwFatte}} / {{bwGiorni}}</span>
+      <span class="agent-etichetta">{{localize "CPRX.BwUnOraAlGiorno"}}</span>
+      <span class="agent-progresso"><i style="width: {{bwPercento}}%"></i></span>
+    </div>
+
+    {{#if puoScrivere}}
+    {{#if bwCompleto}}
+    <button type="button" class="agent-cta" data-action="bwChiudi">
+      {{localize "CPRX.BwChiudi"}}
+    </button>
+    {{else}}
+    <button type="button" class="agent-cta {{#if bwOggiFatta}}scarica{{/if}}"
+            data-action="bwSessione">
+      {{#if bwOggiFatta}}{{localize "CPRX.BwGiaOggi"}}{{else}}{{localize "CPRX.BwSessioneOggi"}}{{/if}}
+    </button>
+    {{/if}}
+    {{/if}}
+
+    {{#if bwEsito}}
+    <p class="agent-nota">
+      {{#if bwPrima}}{{localize "CPRX.BwNotaPrima"}}{{else}}{{localize "CPRX.BwNotaDopo"}}{{/if}}
+    </p>
+    {{/if}}
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.BwSessioni"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <ul class="agent-elenco">
+      {{#each bwSessioni}}
+      <li class="agent-voce">
+        <i class="fa-solid {{#if this.fatta}}fa-circle-check{{else}}fa-circle{{/if}} agent-recente-icona"></i>
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{localize "CPRX.BwGiorno"}} {{this.numero}}</span>
+        </div>
+        <span class="agent-etichetta">
+          {{#if this.fatta}}{{localize "CPRX.BwFatta"}}
+          {{else}}{{#if this.oggi}}{{localize "CPRX.BwTocca"}}{{else}}{{localize "CPRX.BwDaFare"}}{{/if}}{{/if}}
+        </span>
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  {{!-- ========================== ELFTRACKER ======================== --}}
+  {{#if vistaElflines}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{#if elfModulo}}
+    <div class="agent-modulo">
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.ElfNome"}}</span>
+        <input type="text" name="nome" value="{{elf.nome}}" />
+      </label>
+      <div class="agent-riga">
+        <label class="agent-campo">
+          <span class="agent-campo-nome">{{localize "CPRX.ElfLivello"}}</span>
+          <input type="text" name="livello" value="{{elf.livello}}" />
+        </label>
+        <label class="agent-campo">
+          <span class="agent-campo-nome">{{localize "CPRX.ElfServer"}}</span>
+          <input type="text" name="server" value="{{elf.server}}" />
+        </label>
+      </div>
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.ElfGilda"}}</span>
+        <input type="text" name="gilda" value="{{elf.gilda}}" />
+      </label>
+
+      <div class="agent-sezione-riga">
+        <span class="agent-etichetta">{{localize "CPRX.ElfStat"}}</span>
+        <span class="agent-filetto"></span>
+      </div>
+      {{#each elf.stat}}
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{this.etichetta}}</span>
+        <input type="text" name="{{this.chiave}}" value="{{this.campo}}" />
+      </label>
+      {{/each}}
+
+      <div class="agent-riga">
+        <button type="button" class="agent-cta scarica" data-action="elfAnnulla">
+          {{localize "CPRX.Annulla"}}
+        </button>
+        <button type="button" class="agent-cta" data-action="elfSalva">
+          {{localize "CPRX.Salva"}}
+        </button>
+      </div>
+    </div>
+    {{else}}
+
+    {{#if elfCollegato}}
+    <div class="agent-eroe">
+      <span class="agent-etichetta acceso">{{localize "CPRX.ElfCollegato"}}</span>
+      <span class="agent-eroe-titolo">{{elf.nome}}{{#if elf.livello}} · {{elf.livello}}{{/if}}</span>
+      <span class="agent-etichetta">{{elf.gilda}}{{#if elf.server}} · {{elf.server}}{{/if}}</span>
+    </div>
+
+    <div class="agent-quadretti agent-quadretti-tre">
+      {{#each elf.stat}}
+      <div class="agent-quadretto">
+        <span class="agent-quadretto-valore">{{this.valore}}</span>
+        <span class="agent-etichetta">{{this.etichetta}}</span>
+      </div>
+      {{/each}}
+    </div>
+    {{else}}
+    <p class="agent-vuoto">{{localize "CPRX.ElfNessunAccount"}}</p>
+    {{/if}}
+
+    {{#if puoScrivere}}
+    <button type="button" class="agent-cta" data-action="elfModifica">
+      {{#if elfCollegato}}{{localize "CPRX.Modifica"}}{{else}}{{localize "CPRX.ElfCollega"}}{{/if}}
+    </button>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- =========================== BIG IAAA ========================= --}}
+  {{#if vistaBigIaaa}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-eroe agent-eroe-centro">
+      <span class="agent-etichetta acceso">{{localize "CPRX.IaaaBonus"}}</span>
+      <span class="agent-conto-cifra">+{{iaaaBonus}}</span>
+      <span class="agent-etichetta">
+        {{localize "CPRX.IaaaArchivistica"}}
+      </span>
+    </div>
+
+    <div class="agent-righe">
+      <button type="button" class="agent-riga-stato" data-action="iaaaCommuta"
+              {{#unless puoScrivere}}disabled{{/unless}}>
+        <span class="agent-riga-nome">{{localize "CPRX.IaaaPotenzia"}}</span>
+        <span class="agent-leva {{#if iaaaAcceso}}acceso{{/if}}"></span>
+      </button>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.IaaaSenza"}}</span>
+        <span class="agent-riga-valore">+{{iaaaBase}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.IaaaCon"}}</span>
+        <span class="agent-riga-valore">+{{iaaaGrande}}</span>
+      </div>
+    </div>
+
+    {{!-- Non e' una battuta: sta nel manuale, e non si puo' spegnere. --}}
+    <p class="agent-allarme-riga">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      {{localize "CPRX.IaaaTelemetria"}}
+    </p>
+  </div>
+  {{/if}}
+
+  {{!-- ======================= NETWATCH SENTINEL ==================== --}}
+  {{#if vistaSentinel}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-eroe">
+      <span class="agent-etichetta acceso">
+        {{#if sentPulito}}{{localize "CPRX.SentPulito"}}{{else}}{{localize "CPRX.SentEsposto"}}{{/if}}
+      </span>
+      <span class="agent-eroe-titolo">
+        {{#if sentPulito}}{{localize "CPRX.SentPerimetro"}}{{else}}{{sentEsposti}} · {{localize "CPRX.SentDaGuardare"}}{{/if}}
+      </span>
+      <span class="agent-etichetta">{{localize "CPRX.SentRete"}}</span>
+    </div>
+
+    {{#if puoScrivere}}
+    <button type="button" class="agent-cta" data-action="sentScansiona">
+      {{localize "CPRX.SentScansiona"}}
+    </button>
+    {{/if}}
+
+    {{!-- La qualita' del dispositivo decide i due VD del manuale: uno per
+          chi ti hackera da lontano col Breacher, uno per chi l'Agent ce
+          l'ha in mano. --}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.SentQualita"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    <div class="agent-pillole">
+      {{#each sentQualitaScelte}}
+      <button type="button" class="agent-pillola {{#if this.scelta}}attiva{{/if}}"
+              data-action="sentQualita" data-qualita="{{this.chiave}}"
+              {{#unless ../puoScrivere}}disabled{{/unless}}>{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    <div class="agent-righe">
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.SentVdRemoto"}}</span>
+        <span class="agent-riga-valore">VD {{sentVdRemoto}}</span>
+      </div>
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.SentVdDiretto"}}</span>
+        <span class="agent-riga-valore">VD {{sentVdDiretto}}</span>
+      </div>
+    </div>
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.SentNodi"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    <ul class="agent-elenco">
+      {{#each sentNodi}}
+      <li class="agent-voce {{#unless this.sicuro}}persa{{/unless}}">
+        <i class="fa-solid fa-circle agent-recente-icona"></i>
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.nome}}</span>
+          <span class="agent-voce-sotto">{{this.meta}}</span>
+        </div>
+        <span class="agent-etichetta">{{this.stato}}</span>
+      </li>
+      {{/each}}
+    </ul>
+
+    {{#if sentHaRegistro}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.SentRegistro"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+    <div class="agent-registro">
+      {{#each sentRegistro}}
+      <div><span class="{{#unless this.buono}}allarme{{/unless}}">{{this.quando}}</span> {{this.testo}}</div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if puoScrivere}}
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.SentRiavvio"}}</span>
+      <span class="agent-filetto"></span>
+      {{#if sentRiavvio}}<span class="agent-etichetta">{{sentRiavvio}}</span>{{/if}}
+    </div>
+    <p class="agent-nota">{{localize "CPRX.SentRiavvioNota"}}</p>
+    <button type="button" class="agent-cta scarica" data-action="sentRiavvia">
+      {{localize "CPRX.SentRiavvia"}} · {{sentMinuti}}′
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ====================== ZIGGURAT PATCH PRO =================== --}}
+  {{#if vistaPatchpro}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-eroe">
+      <span class="agent-etichetta acceso">{{localize "CPRX.PatchLaTua"}}</span>
+      <span class="agent-eroe-titolo">{{patchPost}} · {{localize "CPRX.PatchPost"}}</span>
+      <span class="agent-etichetta">
+        {{localize "CPRX.PatchCuoriTotali"}} {{patchCuori}} · {{localize "CPRX.PatchBozze"}} {{patchBozze}}
+      </span>
+
+      {{!-- Sette giorni di pubblicazioni. La colonna piu' alta fa da scala:
+            con due post la prima riempirebbe il grafico. --}}
+      <div class="agent-istogramma">
+        {{#each patchSettimana}}
+        <div class="agent-istogramma-colonna">
+          <i style="height: {{this.altezza}}%"></i>
+          <span class="agent-etichetta">{{this.etichetta}}</span>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="agent-pillole">
+      {{#each patchSchede}}
+      <button type="button" class="agent-pillola {{#if this.attiva}}attiva{{/if}}"
+              data-action="patchScheda" data-scheda="{{this.chiave}}">{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    {{#if patchInBozze}}
+    {{#if patchPuoScrivere}}
+    <div class="agent-modulo">
+      <textarea name="testo" rows="3" placeholder="{{localize 'CPRX.PatchScrivi'}}"></textarea>
+      <button type="button" class="agent-cta scarica" data-action="patchBozza">
+        {{localize "CPRX.PatchSalvaBozza"}}
+      </button>
+    </div>
+    {{/if}}
+    {{/if}}
+
+    {{#if patchVuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.PatchVuoto"}}</p>
+    {{else}}
+    <ul class="agent-elenco">
+      {{#each patchElenco}}
+      <li class="agent-voce">
+        <div class="agent-voce-testo">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          {{#if this.testo}}<span class="agent-voce-corpo">{{this.testo}}</span>{{/if}}
+          {{#if this.meta}}<span class="agent-voce-sotto">{{this.meta}}</span>{{/if}}
+        </div>
+        {{#if this.bozza}}
+        {{#if ../patchPuoScrivere}}
+        <button type="button" class="agent-solo-icona agent-tondo-piccolo acceso"
+                data-action="patchPubblica" data-id="{{this.id}}"
+                title="{{localize 'CPRX.GardenPubblica'}}">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+        <button type="button" class="agent-solo-icona agent-tondo-piccolo"
+                data-action="patchElimina" data-id="{{this.id}}"
+                title="{{localize 'CPRX.Elimina'}}">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+        {{/if}}
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- =========================== INCARICHI ======================== --}}
+  {{#if vistaLavori}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+      {{#if puoScrivere}}
+      <button type="button" class="agent-aggiungi agent-solo-icona" data-action="nuovo"
+              title="{{localize 'CPRX.Nuovo'}}"><i class="fa-solid fa-plus"></i></button>
+      {{/if}}
+    </header>
+
+    <div class="agent-pillole">
+      {{#each filtriGig}}
+      <button type="button" class="agent-pillola {{#if this.attiva}}attiva{{/if}}"
+              data-action="filtroGig" data-filtro="{{this.chiave}}">{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    {{#if vuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.ElencoVuoto"}}</p>
+    {{else}}
+    {{!-- Una scheda per lavoro, staccate: qui ogni voce ha quattro righe, e
+          attaccarle vorrebbe dire un muro. --}}
+    <div class="agent-gig">
+      {{#each lavori}}
+      <article class="agent-gig-scheda stato-{{this.stato}}">
+        <header>
+          <span class="agent-tondo-iniziali">{{this.iniziale}}</span>
+          <span class="agent-gig-chi">
+            <span class="agent-gig-titolo">
+              {{this.titolo}}
+              {{#if this.daMaster}}<i class="fa-solid fa-tower-broadcast agent-daMaster" title="{{localize 'CPRX.DaMaster'}}"></i>{{/if}}
+            </span>
+            {{#if this.committente}}<span class="agent-etichetta">{{this.committente}}</span>{{/if}}
+          </span>
+          <span class="agent-gig-stato">{{this.etichettaStato}}</span>
+        </header>
+
+        {{#if this.dettagli}}<p class="agent-gig-testo">{{this.dettagli}}</p>{{/if}}
+
+        <footer>
+          <span class="agent-progresso"><i style="width: {{this.avanzamento}}%"></i></span>
+          {{#if this.ricompensa}}<span class="agent-gig-paga">{{this.ricompensa}}</span>{{/if}}
+        </footer>
+
+        {{#if ../puoScrivere}}
+        <div class="agent-gig-azioni">
+          <button type="button" class="agent-solo-icona agent-tondo-piccolo" data-action="modifica"
+                  data-id="{{this.id}}" title="{{localize 'CPRX.Apri'}}">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button type="button" class="agent-solo-icona agent-tondo-piccolo" data-action="elimina"
+                  data-id="{{this.id}}" title="{{localize 'CPRX.Elimina'}}">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+        {{/if}}
+      </article>
+      {{/each}}
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{#if vistaLista}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-cerca">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" name="ricerca" value="{{ricerca}}"
+             placeholder="{{localize 'CPRX.Cerca'}}" />
+    </div>
+
+    {{#if vuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.ElencoVuoto"}}</p>
+    {{else}}
+    {{!-- Schede staccate, non righe: una nota si legge dall'elenco, e tre
+          righe di testo dicono molto piu' di un titolo. --}}
+    <div class="agent-note">
+      {{#each voci}}
+      <article class="agent-nota-scheda">
+        <header>
+          <span class="agent-nota-titolo">
+            {{this.titolo}}
+            {{#if this.daMaster}}<i class="fa-solid fa-tower-broadcast agent-daMaster" title="{{localize 'CPRX.DaMaster'}}"></i>{{/if}}
+          </span>
+          {{#if this.quando}}<span class="agent-etichetta">{{this.quando}}</span>{{/if}}
+        </header>
+        {{#if this.corpo}}<p class="agent-nota-testo">{{this.corpo}}</p>{{/if}}
+
+        <div class="agent-gig-azioni">
+          {{#unless this.coperto}}
+          <button type="button" class="agent-solo-icona agent-tondo-piccolo" data-action="modifica"
+                  data-id="{{this.id}}" title="{{localize 'CPRX.Apri'}}">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          {{/unless}}
+          {{#if ../puoScrivere}}
+          <button type="button" class="agent-solo-icona agent-tondo-piccolo" data-action="elimina"
+                  data-id="{{this.id}}" title="{{localize 'CPRX.Elimina'}}">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+          {{/if}}
+        </div>
+      </article>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{!-- Il tasto per aggiungere sta in fondo, dove finisce la lettura, e
+          non e' piu' un piu' in un angolo della testata. --}}
+    {{#if puoScrivere}}
+    <button type="button" class="agent-tasto-lungo" data-action="nuovo">{{etichettaNuovo}}</button>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{#if vistaForm}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="annulla">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3>{{etichettaApp}}</h3>
+    </header>
+
+    <div class="agent-modulo">
+      {{#each campi}}
+      {{#if this.eCheck}}
+      <label class="agent-riga agent-interruttore">
+        <input type="checkbox" name="{{this.chiave}}" {{#if this.acceso}}checked{{/if}}
+               {{#unless ../puoScrivere}}disabled{{/unless}} />
+        <span>{{this.etichetta}}</span>
+      </label>
+      {{else}}
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{this.etichetta}}{{#if this.richiesto}} *{{/if}}</span>
+
+        {{#if this.eTesto}}
+        <input type="text" name="{{this.chiave}}" value="{{this.valore}}" {{#unless ../puoScrivere}}disabled{{/unless}} />
+        {{/if}}
+        {{#if this.eNumero}}
+        <input type="number" name="{{this.chiave}}" value="{{this.valore}}" {{#unless ../puoScrivere}}disabled{{/unless}} />
+        {{/if}}
+        {{#if this.eArea}}
+        <textarea name="{{this.chiave}}" rows="4" {{#unless ../puoScrivere}}disabled{{/unless}}>{{this.valore}}</textarea>
+        {{/if}}
+        {{#if this.eSelect}}
+        <select name="{{this.chiave}}" {{#unless ../puoScrivere}}disabled{{/unless}}>
+          {{#each this.opzioni}}
+          <option value="{{this.valore}}" {{#if this.selezionato}}selected{{/if}}>{{this.etichetta}}</option>
+          {{/each}}
+        </select>
+        {{/if}}
+      </label>
+      {{/if}}
+      {{/each}}
+
+      {{#if puoScrivere}}
+      <div class="agent-modulo-azioni">
+        <button type="button" class="agent-primario" data-action="salva">
+          <i class="fa-solid fa-floppy-disk"></i> {{localize "CPRX.Salva"}}
+        </button>
+        <button type="button" data-action="annulla">{{localize "CPRX.Annulla"}}</button>
+      </div>
+      {{else}}
+      <p class="agent-vuoto">{{localize "CPRX.SolaLettura"}}</p>
+      {{/if}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{!-- Il dock: quattro tessere fisse sotto lo schermo, come su un telefono.
+        Sta fuori dai blocchi delle viste, quindi legge dal contesto comune —
+        la stessa regola della barra di stato. --}}
+  {{#if dock}}
+  <nav class="agent-dock">
+    {{#each dock}}
+    <button type="button" class="agent-dock-tessera {{#if this.attiva}}attiva{{/if}}"
+            data-action="apriApp" data-app="{{this.app}}"
+            {{#if this.scheda}}data-scheda="{{this.scheda}}"{{/if}}
+            title="{{this.etichetta}}">
+      <i class="{{this.icona}}"></i>
+      <span>{{this.etichetta}}</span>
+      {{#if this.conteggio}}<b class="agent-conta">{{this.conteggio}}</b>{{/if}}
+    </button>
+    {{/each}}
+  </nav>
+  {{/if}}
+
+  <span class="agent-barretta" aria-hidden="true"></span>
+</div>
+
+  </div>
+</div>

@@ -1,0 +1,11 @@
+# Impostazioni locali di Claude Code: sono permessi di questa macchina,
+# non del progetto.
+.claude/settings.local.json
+
+# Roba dei sistemi operativi
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Node, se un giorno servisse
+node_modules/

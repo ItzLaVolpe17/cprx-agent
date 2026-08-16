@@ -1,0 +1,5594 @@
+/* Le due famiglie del progetto di design. Sono l'unica cosa che questo
+   modulo carica dalla rete: se il tavolo gioca senza internet, o se
+   preferisci non chiamare fuori, togli questa riga e le pile di ripiego
+   qui sotto reggono da sole — cambia il carattere, non il resto. */
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap");
+
+/* =====================================================================
+   Agent — Cyberpunk RED
+   Strumento di lavoro, non giocattolo luminoso. La schermata principale
+   deve dire qualcosa a colpo d'occhio; gli elenchi devono restare
+   leggibili durante il gioco. Il colore d'accento e' l'unica cosa che
+   cambia tra un tema e l'altro: fondo e testo restano tarati.
+   ===================================================================== */
+
+.cprx-agent {
+  /* Tema predefinito: notte. Gli altri lo sovrascrivono piu' sotto. */
+  --agent-fondo: #0c0c11;
+  --agent-pannello: #17171f;
+  --agent-rilievo: #20202b;
+  --agent-linea: #2e2e3c;
+  --agent-testo: #e8e6f0;
+  --agent-tenue: #8b889e;
+  --agent-accento: #f5d90a;
+  --agent-su-accento: #0a0a0d;
+  --agent-allarme: #e5262c;
+  --agent-ok: #4fb477;
+
+  /* Il secondo colore e il colore critico servono al quadro della home:
+     ogni tema li ridefinisce solo se ha motivo di farlo. */
+  --agent-secondo: #4fb8d4;
+  --agent-critico: #e5262c;
+
+  --agent-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", "Consolas", monospace;
+  --agent-titoli: "Roboto Condensed", "Signika", "Arial Narrow", sans-serif;
+
+  /* La forma. Nel progetto di design la home e' il sistema — contorni
+     netti, spigoli vivi — e dentro le App tutto diventa una scheda tonda
+     con le righe separate da un filo. Le due cose convivono di proposito:
+     e' quello che distingue il guscio dalle applicazioni.
+
+     Il filo fra due righe non e' `--agent-linea`: dentro una scheda quel
+     contrasto e' troppo, e si vedrebbe un reticolo invece di un elenco. */
+  --agent-raggio: 16px;
+  --agent-raggio-piccolo: 12px;
+  --agent-pillola: 999px;
+  --agent-separatore: color-mix(in srgb, var(--agent-linea) 55%, var(--agent-pannello));
+  --agent-debole: color-mix(in srgb, var(--agent-tenue) 74%, var(--agent-fondo));
+}
+
+/* --- temi ----------------------------------------------------------- */
+
+.cprx-agent.tema-sangue {
+  --agent-fondo: #100a0c;
+  --agent-pannello: #1b1215;
+  --agent-rilievo: #24181c;
+  --agent-linea: #3a262b;
+  --agent-testo: #f0e6e8;
+  --agent-tenue: #a08a90;
+  --agent-accento: #e5262c;
+  --agent-su-accento: #ffffff;
+  --agent-allarme: #f5d90a;
+}
+
+.cprx-agent.tema-militech {
+  --agent-fondo: #0e110e;
+  --agent-pannello: #171c17;
+  --agent-rilievo: #1f261f;
+  --agent-linea: #2f3a2f;
+  --agent-testo: #e4ebe2;
+  --agent-tenue: #8d9a8b;
+  --agent-accento: #c9a227;
+  --agent-su-accento: #0e110e;
+}
+
+.cprx-agent.tema-netrunner {
+  --agent-fondo: #0c0912;
+  --agent-pannello: #16101f;
+  --agent-rilievo: #1e1729;
+  --agent-linea: #332845;
+  --agent-testo: #ece6f6;
+  --agent-tenue: #9489ab;
+  --agent-accento: #b46cf0;
+  --agent-su-accento: #0c0912;
+}
+
+/* Il tema del progetto "Agent Phone Cyberpunk": giallo acido su nero
+   bluastro, cyan come secondo, rosa shocking per gli allarmi. E' l'unico
+   tema che porta con se' anche la propria tipografia. */
+.cprx-agent.tema-acido {
+  --agent-fondo: #08090d;
+  --agent-pannello: #0b0d12;
+  --agent-rilievo: #11151c;
+  --agent-linea: #1d222b;
+  --agent-testo: #eef2f8;
+  --agent-tenue: #6b7484;
+  --agent-accento: #d9f43a;
+  --agent-su-accento: #0b0d12;
+  --agent-allarme: #ff2e6e;
+  --agent-critico: #ff2e6e;
+  --agent-secondo: #35d0e0;
+  --agent-ok: #35d0e0;
+
+  --agent-mono: "Share Tech Mono", ui-monospace, "Consolas", monospace;
+  --agent-titoli: "Rajdhani", "Roboto Condensed", "Signika", sans-serif;
+}
+
+.cprx-agent.tema-chiaro {
+  --agent-fondo: #e8e8ee;
+  --agent-pannello: #f6f6fa;
+  --agent-rilievo: #ffffff;
+  --agent-linea: #c9c9d6;
+  --agent-testo: #14141c;
+  --agent-tenue: #5c5c70;
+  --agent-accento: #c8102e;
+  --agent-su-accento: #ffffff;
+  --agent-ok: #2f7d4f;
+}
+
+/* --- il corpo del telefono ------------------------------------------- */
+
+/* La finestra dell'Agent non ha cornice: la radice e' il telefono, e si
+   posiziona da sola (`setPosition()` scrive left/top/width/height). Serve
+   `position: absolute`, che senza la cornice non arriva piu' da Foundry. */
+.cprx-agent.cprx-agent-telefono {
+  position: absolute;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  overflow: visible;
+}
+
+.cprx-agent .agent-telefono {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.35rem;
+}
+
+/* La targhetta: il nome, e il manico per spostare il telefono. */
+.cprx-agent .agent-targhetta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: center;
+  max-width: 100%;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--agent-linea);
+  border-radius: 999px;
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: grab;
+  user-select: none;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-targhetta:active { cursor: grabbing; }
+
+.cprx-agent .agent-targhetta-nome {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent button.agent-targhetta-chiudi {
+  padding: 0;
+  width: 1rem;
+  height: 1rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--agent-tenue);
+  font-size: 0.6rem;
+  line-height: 1;
+}
+
+.cprx-agent button.agent-targhetta-chiudi:hover { color: var(--agent-allarme); }
+
+/* Il guscio: bordi tondi, ombra, e i tasti che sporgono sui fianchi. */
+.cprx-agent .agent-corpo {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 0.55rem;
+  border-radius: 2.1rem;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--agent-rilievo) 80%, #fff 6%) 0%,
+    var(--agent-fondo) 45%,
+    var(--agent-rilievo) 100%);
+  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.9),
+              0 0 0 1px color-mix(in srgb, var(--agent-accento) 12%, transparent);
+}
+
+.cprx-agent .agent-tasto-lato {
+  position: absolute;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--agent-rilievo), var(--agent-fondo));
+}
+
+.cprx-agent .agent-tasto-lato.sinistra { left: -3px; border-radius: 3px 0 0 3px; }
+.cprx-agent .agent-tasto-lato.sinistra.alto { top: 5.2rem; height: 2.6rem; }
+.cprx-agent .agent-tasto-lato.sinistra.basso { top: 8.6rem; height: 1.7rem; }
+
+.cprx-agent .agent-tasto-lato.destra {
+  right: -3px;
+  top: 6rem;
+  height: 3.6rem;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, var(--agent-accento),
+    color-mix(in srgb, var(--agent-accento) 35%, #000));
+}
+
+/* La tacca: sta sopra la barra di stato e non intercetta il mouse. */
+.cprx-agent .agent-tacca {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 5.4rem;
+  height: 1.1rem;
+  border-radius: 0 0 0.7rem 0.7rem;
+  background: var(--agent-fondo);
+  pointer-events: none;
+}
+
+.cprx-agent .agent-tacca-capsula {
+  width: 2rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--agent-rilievo);
+}
+
+.cprx-agent .agent-tacca-occhio {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--agent-pannello);
+  border: 1px solid var(--agent-linea);
+}
+
+.cprx-agent .agent-barretta {
+  position: absolute;
+  bottom: 0.22rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: 6rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--agent-linea);
+  pointer-events: none;
+}
+
+/* --- scocca --------------------------------------------------------- */
+
+.cprx-agent .window-content {
+  padding: 0;
+  background: var(--agent-fondo);
+  color: var(--agent-testo);
+  overflow: hidden;
+}
+
+.cprx-agent .agent-scocca {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: var(--agent-titoli);
+  overflow: hidden;
+  /* Lo schermo dentro il guscio: bordi tondi e fondo suo. */
+  border-radius: 1.6rem;
+  background: var(--agent-fondo);
+  color: var(--agent-testo);
+}
+
+/* Qui c'era un filo d'accento sul bordo alto della scocca. Aveva senso
+   quando la scocca era il contenuto di una finestra; adesso che il telefono
+   e' disegnato, una riga colorata sopra lo schermo non ce l'ha nessun
+   telefono, e si vedeva che era una cornice dentro un'altra. */
+
+/* La barra di stato non e' un pannello: su un telefono sta **sullo**
+   schermo, senza fondo suo e senza riga che la stacchi da quello che c'e'
+   sotto. Il padding in alto tiene le scritte fuori dalla tacca. */
+/* Sta **sopra** tutto quello che si dipinge sulla scocca: lo sfondo, il suo
+   velo, il riflesso del vetro e la spazzata sono tutti figli posizionati, e
+   una barra statica finisce sotto anche a `z-index: 0`. Era il motivo per
+   cui su home e vetro di blocco l'ora e la rete sparivano: le uniche due
+   viste dove lo sfondo si vede. */
+.cprx-agent .agent-stato {
+  position: relative;
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.8rem 0.3rem;
+  background: transparent;
+  font-family: var(--agent-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--agent-tenue);
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-rete { color: var(--agent-secondo); }
+.cprx-agent .agent-os { flex: 1; opacity: 0.55; }
+.cprx-agent .agent-ora {
+  color: var(--agent-accento);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+}
+
+/* La spia della rete: pulsa piano, e si ferma se il sistema chiede calma. */
+.cprx-agent .agent-spia {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--agent-secondo);
+  flex: 0 0 auto;
+  animation: agent-battito 2.6s ease-in-out infinite;
+}
+
+@keyframes agent-battito { 0%, 100% { opacity: 1 } 50% { opacity: 0.25 } }
+
+/* Tacche di segnale e batteria: decorazione, non misura. Sono marcate
+   aria-hidden nel template proprio perche' non dicono niente di vero. */
+.cprx-agent .agent-tacche {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 9px;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-tacche i {
+  width: 2px;
+  display: block;
+  background: var(--agent-tenue);
+}
+
+.cprx-agent .agent-tacche i:nth-child(1) { height: 3px; }
+.cprx-agent .agent-tacche i:nth-child(2) { height: 5px; }
+.cprx-agent .agent-tacche i:nth-child(3) { height: 7px; }
+.cprx-agent .agent-tacche i:nth-child(4) { height: 9px; }
+.cprx-agent .agent-tacche i.spenta { background: var(--agent-linea); }
+
+.cprx-agent .agent-batteria {
+  width: 17px;
+  height: 9px;
+  padding: 1.5px;
+  border: 1px solid var(--agent-linea);
+  display: block;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-batteria b {
+  display: block;
+  width: 68%;
+  height: 100%;
+  background: var(--agent-accento);
+}
+
+.cprx-agent .agent-ingranaggio {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 0.62rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--agent-tenue);
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-ingranaggio:hover { color: var(--agent-accento); border-color: var(--agent-linea); }
+
+/* --- impostazioni interne ------------------------------------------- */
+
+.cprx-agent .agent-temi {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem;
+}
+
+.cprx-agent .agent-tema {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+}
+
+/* La macchia usa le variabili del tema che la classe stessa applica:
+   il bottone mostra il colore che sceglie. */
+.cprx-agent .agent-tema-macchia {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  border: 1px solid var(--agent-linea);
+}
+
+/* I colori vanno scritti qui: le classi dei temi valgono sull'elemento
+   radice, quindi su un bottone figlio non avrebbero alcun effetto. */
+.cprx-agent .macchia-notte .agent-tema-macchia     { background: #f5d90a; }
+.cprx-agent .macchia-sangue .agent-tema-macchia    { background: #e5262c; }
+.cprx-agent .macchia-militech .agent-tema-macchia  { background: #c9a227; }
+.cprx-agent .macchia-netrunner .agent-tema-macchia { background: #b46cf0; }
+.cprx-agent .macchia-chiaro .agent-tema-macchia    { background: #e8e8ee; }
+.cprx-agent .macchia-acido .agent-tema-macchia     { background: #d9f43a; }
+
+.cprx-agent .agent-tema-nome {
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+}
+
+.cprx-agent .agent-tema.attivo { border-color: var(--agent-accento); }
+
+.cprx-agent .agent-linguetta b {
+  opacity: 0.55;
+  font-weight: 400;
+  margin-left: 0.15rem;
+}
+
+/* --- avvio: 0,8 s all'apertura, non torna a ogni ridisegno ---------- */
+
+.cprx-agent .agent-avvio {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  background: var(--agent-fondo);
+  font-family: var(--agent-mono);
+}
+
+.cprx-agent.in-avvio .agent-avvio {
+  display: flex;
+  animation: agent-congedo 800ms steps(1, end) forwards;
+}
+
+/* Qui ci sta il saluto, che e' una frase e non una sigla: spaziatura piu'
+   stretta di quella che aveva "AGENT OS", e libero di andare a capo. */
+.cprx-agent .agent-avvio-testo {
+  max-width: 84%;
+  color: var(--agent-accento);
+  font-size: 1.05rem;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
+  text-align: center;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.cprx-agent .agent-avvio-barra {
+  width: 56%;
+  height: 2px;
+  background: var(--agent-linea);
+  overflow: hidden;
+}
+
+.cprx-agent.in-avvio .agent-avvio-barra::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--agent-accento);
+  animation: agent-carica 700ms linear forwards;
+}
+
+@keyframes agent-carica { to { width: 100%; } }
+@keyframes agent-congedo { 0%, 90% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+
+/* --- corpo ---------------------------------------------------------- */
+
+.cprx-agent .agent-schermo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  /* `overflow-y: auto` da solo non basta: per le regole del CSS l'altro
+     asse smette di valere `visible` e diventa `auto` anche lui, e un paio
+     di pixel di troppo bastavano a far comparire una barra di scorrimento
+     orizzontale in fondo allo schermo. Un telefono non scorre di lato. */
+  overflow-x: hidden;
+  padding: 1.15rem 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* .agent-schermo e' una colonna flessibile: senza questo, un bottone con
+   flex:1 non si allarga, si allunga in altezza fino a riempire lo schermo. */
+.cprx-agent .agent-schermo > button,
+.cprx-agent .agent-schermo > .agent-riga,
+.cprx-agent .agent-schermo > input { flex: 0 0 auto; }
+
+.cprx-agent .agent-schermo::-webkit-scrollbar { width: 8px; }
+.cprx-agent .agent-schermo::-webkit-scrollbar-track { background: var(--agent-fondo); }
+.cprx-agent .agent-schermo::-webkit-scrollbar-thumb { background: var(--agent-linea); }
+
+/* Lo sfondo sta solo qui, e con un velo sopra: dietro gli elenchi
+   ammazzerebbe il contrasto. */
+.cprx-agent .agent-home {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+
+.cprx-agent .agent-home::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--agent-fondo) 72%, transparent),
+    color-mix(in srgb, var(--agent-fondo) 94%, transparent)
+  );
+  pointer-events: none;
+}
+
+.cprx-agent .agent-home > * { position: relative; z-index: 1; }
+
+/* --- schermata di blocco -------------------------------------------- */
+
+.cprx-agent .agent-blocco {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem;
+  background: color-mix(in srgb, var(--agent-pannello) 88%, transparent);
+  border: 1px solid var(--agent-linea);
+  border-left: 3px solid var(--agent-accento);
+}
+
+.cprx-agent .agent-ritratto {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border: 1px solid var(--agent-linea);
+  border-radius: 0;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-blocco-testo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cprx-agent .agent-blocco-nome {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-blocco-riga {
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-blocco-azioni {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  opacity: 0.4;
+  transition: opacity 120ms ease;
+}
+
+.cprx-agent .agent-blocco:hover .agent-blocco-azioni,
+.cprx-agent .agent-blocco:focus-within .agent-blocco-azioni { opacity: 1; }
+
+.cprx-agent .agent-blocco-azioni button { width: 24px; height: 24px; font-size: 0.65rem; }
+
+/* --- riepilogo ------------------------------------------------------ */
+
+.cprx-agent .agent-riepilogo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--agent-linea);
+  border: 1px solid var(--agent-linea);
+}
+
+.cprx-agent .agent-dato {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.5rem 0.2rem;
+  background: color-mix(in srgb, var(--agent-pannello) 88%, transparent);
+}
+
+.cprx-agent .agent-dato-valore {
+  font-family: var(--agent-mono);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--agent-accento);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cprx-agent .agent-dato-nome {
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+  text-align: center;
+}
+
+/* --- sfondo ---------------------------------------------------------- */
+
+/* Sta dietro tutto e non intercetta il mouse. Il velo sopra non e'
+   decorazione: le foto sono immagini vere, e senza un velo il testo
+   bianco su un cielo chiaro non si legge. Il velo si chiude verso il
+   basso, dove stanno il dock e le notifiche. */
+.cprx-agent .agent-sfondo,
+.cprx-agent .agent-sfondo-velo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cprx-agent .agent-sfondo {
+  background-size: cover;
+  background-position: center;
+  opacity: 0.9;
+}
+
+.cprx-agent .agent-sfondo-velo {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--agent-fondo) 55%, transparent) 0%,
+    color-mix(in srgb, var(--agent-fondo) 72%, transparent) 55%,
+    color-mix(in srgb, var(--agent-fondo) 90%, transparent) 100%);
+}
+
+/* Con uno sfondo dietro, le tre pagine della home non possono avere un
+   fondo pieno: sono il contenuto, non un pannello. */
+.cprx-agent .agent-home,
+.cprx-agent .agent-vetrino,
+.cprx-agent .agent-pagina { position: relative; background: transparent; }
+
+/* La scelta dello sfondo: anteprime verticali, come sono le immagini. */
+.cprx-agent .agent-sfondi {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.cprx-agent .agent-scocca button.agent-sfondo-scelta,
+.cprx-agent .agent-scocca button.agent-sfondo-scelta:hover {
+  position: relative;
+  width: auto;
+  padding: 0;
+  aspect-ratio: 9 / 16;
+  border: 0;
+  border-radius: var(--agent-raggio-piccolo);
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--agent-pannello);
+  box-shadow: inset 0 0 0 1px var(--agent-linea);
+}
+
+.cprx-agent .agent-scocca button.agent-sfondo-scelta:hover {
+  box-shadow: inset 0 0 0 1px var(--agent-accento);
+}
+
+.cprx-agent .agent-scocca button.agent-sfondo-scelta.scelto {
+  box-shadow: inset 0 0 0 2px var(--agent-accento);
+}
+
+/* «Nessuno» non ha un'immagine: si riconosce dalla trama diagonale, la
+   stessa che il progetto usa per i segnaposto. */
+.cprx-agent .agent-sfondo-scelta.vuoto {
+  background-image: repeating-linear-gradient(135deg,
+    var(--agent-rilievo) 0 5px, var(--agent-pannello) 5px 10px);
+}
+
+.cprx-agent .agent-sfondo-nome {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.25rem 0.3rem;
+  background: linear-gradient(180deg, transparent,
+    color-mix(in srgb, var(--agent-fondo) 90%, transparent));
+  color: var(--agent-testo);
+  font-family: var(--agent-mono);
+  font-size: 0.42rem;
+  letter-spacing: 0.1em;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-sfondo-spunta {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--agent-accento);
+  color: var(--agent-su-accento);
+  font-size: 0.5rem;
+}
+
+/* --- griglia app ---------------------------------------------------- */
+
+.cprx-agent .agent-griglia {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem 0.6rem;
+}
+
+/* La mattonella non e' piu' un riquadro: e' un quadrato tondo con dentro
+   l'icona, e il nome sta **fuori**, sotto. E' la differenza fra un elenco
+   di caselle e la schermata di un telefono — e sopra uno sfondo il nome
+   dentro la casella sarebbe illeggibile. */
+.cprx-agent .agent-scocca button.agent-icona,
+.cprx-agent .agent-scocca button.agent-icona:hover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--agent-testo);
+  cursor: pointer;
+  line-height: normal;
+  transition: transform 160ms ease;
+}
+
+/* Il quadrato tondo: sfumatura della tinta dell'App su fondo scuro, e un
+   anello interno del suo colore. La tinta arriva dallo stesso blocco che
+   marca la scocca — `app-<chiave>` sta anche qui. */
+.cprx-agent .agent-icona-piastra {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 3.4rem;
+  aspect-ratio: 1;
+  border-radius: 30%;
+  background:
+    linear-gradient(160deg,
+      color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 15%, transparent),
+      color-mix(in srgb, var(--agent-pannello) 86%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 30%, transparent);
+  transition: box-shadow 160ms ease;
+}
+
+.cprx-agent .agent-icona i {
+  font-size: 1.3rem;
+  color: var(--app-tinta, var(--agent-accento));
+}
+
+.cprx-agent .agent-scocca button.agent-icona:hover { transform: translateY(-2px); }
+
+.cprx-agent .agent-icona:hover .agent-icona-piastra {
+  box-shadow:
+    inset 0 0 0 1px var(--app-tinta, var(--agent-accento)),
+    0 0 22px -6px color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 60%, transparent);
+}
+
+/* Il nome sta sopra allo sfondo, quindi si porta dietro la propria ombra:
+   senza, su una foto chiara sparisce. */
+.cprx-agent .agent-icona-nome {
+  font-family: var(--agent-mono);
+  font-size: 0.47rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  text-align: center;
+  color: color-mix(in srgb, var(--agent-testo) 88%, var(--agent-fondo));
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.cprx-agent .agent-icona:hover .agent-icona-nome { color: var(--app-tinta, var(--agent-accento)); }
+
+/* Il pallino sale sul bordo della mattonella, come su un telefono. */
+.cprx-agent .agent-pallino {
+  position: absolute;
+  top: -0.25rem;
+  right: 0.15rem;
+  min-width: 15px;
+  padding: 0 4px;
+  border-radius: var(--agent-pillola);
+  background: var(--agent-allarme);
+  color: #fff;
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  line-height: 15px;
+  text-align: center;
+  box-shadow: 0 0 13px color-mix(in srgb, var(--agent-allarme) 60%, transparent);
+  z-index: 2;
+}
+
+/* --- attivita' recente ---------------------------------------------- */
+
+.cprx-agent .agent-sezione {
+  margin: 0 0 0.35rem;
+  border: none;
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-recenti ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cprx-agent .agent-recenti button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  background: color-mix(in srgb, var(--agent-pannello) 88%, transparent);
+  border: none;
+  border-left: 2px solid transparent;
+  text-align: left;
+}
+
+.cprx-agent .agent-recenti button:hover {
+  border-left-color: var(--agent-accento);
+  background: var(--agent-rilievo);
+}
+
+.cprx-agent .agent-recenti i { color: var(--agent-accento); font-size: 0.7rem; }
+
+.cprx-agent .agent-recente-titolo {
+  flex: 1;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-recente-app {
+  font-family: var(--agent-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+/* --- testata delle app ---------------------------------------------- */
+
+.cprx-agent .agent-testata {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--agent-linea);
+  padding-bottom: 0.45rem;
+}
+
+.cprx-agent .agent-testata h3 {
+  flex: 1;
+  margin: 0;
+  border: none;
+  color: var(--agent-testo);
+  font-family: var(--agent-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.cprx-agent .agent-testata h3 i { color: var(--agent-accento); margin-right: 0.35rem; }
+
+/* I cliccabili sono trasparenti con un contorno. Il riempimento grigio
+   arrivava dal foglio di stile di Foundry, che vince a parita' di peso:
+   serve una specificita' maggiore, quindi si passa dalla scocca. */
+.cprx-agent .agent-scocca button,
+.cprx-agent .window-content button {
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
+  border: 1px solid var(--agent-linea);
+  border-radius: 0;
+  color: var(--agent-testo);
+  cursor: pointer;
+  font-family: var(--agent-mono);
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.cprx-agent .agent-scocca button:hover {
+  border-color: var(--agent-accento);
+  background: color-mix(in srgb, var(--agent-accento) 14%, transparent);
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-scocca button[disabled],
+.cprx-agent .agent-scocca button[disabled]:hover {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: transparent;
+  border-color: var(--agent-linea);
+  color: var(--agent-testo);
+}
+
+/* Solo i bottoni marcati esplicitamente sono quadrati. La regola
+   precedente usava :has(> i:only-child), che matcha anche i bottoni con
+   icona PIU' testo, perche' i nodi di testo non contano come figli. */
+.cprx-agent .agent-scocca button.agent-solo-icona {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-scocca button.agent-largo {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.4rem 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cprx-agent .agent-indietro,
+.cprx-agent .agent-aggiungi {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+}
+
+.cprx-agent .agent-aggiungi {
+  border-color: var(--agent-accento);
+  color: var(--agent-accento);
+}
+
+/* --- elenchi -------------------------------------------------------- */
+
+/* Un elenco e' **una scheda sola**, non una pila di riquadri: bordi tondi
+   fuori, righe separate da un filo dentro. E' la forma che il progetto di
+   design usa per ogni lista, dai contatti ai movimenti della banca, ed e'
+   il motivo per cui qui non c'e' piu' `gap`: due righe con uno stacco in
+   mezzo non sono una scheda, sono due schede. */
+.cprx-agent .agent-elenco {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: var(--agent-raggio);
+  background: var(--agent-pannello);
+  overflow: hidden;
+}
+
+.cprx-agent .agent-voce {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.7rem;
+  background: transparent;
+  border-bottom: 1px solid var(--agent-separatore);
+  transition: background 120ms ease;
+}
+
+.cprx-agent .agent-voce:last-child { border-bottom: 0; }
+
+.cprx-agent .agent-voce:hover { background: var(--agent-rilievo); }
+
+/* Lo stato di un lavoro resta un filo colorato a sinistra, ma dentro la
+   scheda: un `border-left` vero rientrerebbe il contenuto di tre pixel
+   solo sulle righe che ce l'hanno, e l'elenco sembrerebbe storto. */
+.cprx-agent .agent-voce.stato-proposto { box-shadow: inset 3px 0 0 var(--agent-accento); }
+.cprx-agent .agent-voce.stato-corso    { box-shadow: inset 3px 0 0 var(--agent-allarme); }
+.cprx-agent .agent-voce.stato-concluso { box-shadow: inset 3px 0 0 var(--agent-ok); opacity: 0.66; }
+.cprx-agent .agent-voce.stato-fallito  { box-shadow: inset 3px 0 0 var(--agent-tenue); opacity: 0.5; }
+
+.cprx-agent .agent-voce-testo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cprx-agent .agent-voce-titolo { font-weight: 600; font-size: 0.86rem; line-height: 1.25; }
+
+.cprx-agent .agent-voce-sotto {
+  font-family: var(--agent-mono);
+  font-size: 0.66rem;
+  color: var(--agent-tenue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cprx-agent .agent-daMaster {
+  margin-left: 0.3rem;
+  font-size: 0.66rem;
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-voce-azioni {
+  display: flex;
+  gap: 0.2rem;
+  flex: 0 0 auto;
+  opacity: 0.45;
+  transition: opacity 120ms ease;
+}
+
+.cprx-agent .agent-voce:hover .agent-voce-azioni,
+.cprx-agent .agent-voce:focus-within .agent-voce-azioni { opacity: 1; }
+
+.cprx-agent .agent-voce-azioni button { width: 24px; height: 24px; font-size: 0.68rem; }
+
+.cprx-agent .agent-vuoto {
+  color: var(--agent-tenue);
+  text-align: center;
+  padding: 1.4rem 0.5rem;
+  font-family: var(--agent-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+}
+
+/* --- i pezzi che ricorrono in ogni App ------------------------------- */
+
+/* `.agent-schermo` e' una colonna flessibile, e in una colonna flessibile
+   un figlio si **stringe** sotto il proprio contenuto se non glielo si
+   vieta: la carta della banca si schiacciava e tagliava la cifra a meta'.
+   E' la trappola 2 vista dall'altro verso — li' un bottone si allungava,
+   qui una scheda si accorciava. */
+.cprx-agent .agent-schermo > .agent-conto,
+.cprx-agent .agent-schermo > .agent-eroe,
+.cprx-agent .agent-schermo > .agent-sfida,
+.cprx-agent .agent-schermo > .agent-cerca,
+.cprx-agent .agent-schermo > .agent-pillole,
+.cprx-agent .agent-schermo > .agent-cifre,
+.cprx-agent .agent-schermo > .agent-elenco { flex: 0 0 auto; }
+
+/* Sono cinque forme, e stanno qui perche' le usano tutte le App: la
+   pillola di filtro, la barra di ricerca, la scheda d'apertura, il tondo
+   con le iniziali e il tasto pieno in fondo. Un'App che ne ha bisogno le
+   riusa; nessuna se le ridisegna. */
+
+.cprx-agent .agent-pillole {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* `width: auto` non e' decorativo: il foglio di stile di Foundry porta i
+   bottoni a larghezza piena, e in un contenitore flex quella larghezza
+   diventa la base — due pillole affiancate finivano una sotto l'altra,
+   larghe quanto lo schermo. Vale per ogni fila di bottoni piccoli. */
+.cprx-agent .agent-scocca button.agent-pillola {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 0.35rem 0.8rem;
+  border: 0;
+  border-radius: var(--agent-pillola);
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-scocca button.agent-pillola:hover {
+  background: var(--agent-rilievo);
+  color: var(--agent-testo);
+}
+
+/* Una pillola accesa non si riempie di accento: si tinge. Il pieno e'
+   riservato al tasto principale, e se lo prendessero anche i filtri non
+   si capirebbe piu' qual e' il comando della schermata. */
+.cprx-agent .agent-scocca button.agent-pillola.attiva,
+.cprx-agent .agent-scocca button.agent-pillola.attiva:hover {
+  background: color-mix(in srgb, var(--agent-accento) 14%, transparent);
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-cerca {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.15rem 0.75rem;
+  border-radius: var(--agent-pillola);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-cerca > i {
+  flex: 0 0 auto;
+  color: var(--agent-debole);
+  font-size: 0.7rem;
+}
+
+/* Il campo dentro la barra di ricerca perde tutto: la forma la da' la
+   barra. Senza questo si vedrebbe un rettangolo dentro una pillola —
+   la stessa trappola delle caselle di spunta. */
+.cprx-agent .agent-cerca input,
+.cprx-agent .agent-cerca input:focus {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  padding: 0.45rem 0;
+  font-family: var(--agent-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-cerca button { border: 0; }
+
+/* La scheda d'apertura di un'App: dice in una riga a che punto sei. Porta
+   la tinta dell'App, quindi cambia da sola passando da un'App all'altra. */
+.cprx-agent .agent-eroe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.9rem 0.85rem;
+  border-radius: var(--agent-raggio);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 14%, transparent), transparent 70%),
+    var(--agent-pannello);
+}
+
+.cprx-agent .agent-eroe-titolo {
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-eroe .agent-etichetta.acceso { color: var(--app-tinta, var(--agent-accento)); }
+
+/* Un tondo con le iniziali. Qui non ci sono ritratti per i contatti — non
+   c'e' nessun `FilePicker` e non ci sara' — quindi la lettera e' l'unica
+   cosa che distingue una riga dall'altra a colpo d'occhio. */
+.cprx-agent .agent-tondo-iniziali {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%,
+    var(--agent-rilievo), var(--agent-fondo));
+  color: var(--agent-tenue);
+  font-family: var(--agent-titoli);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.cprx-agent .agent-progresso {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--agent-fondo);
+  overflow: hidden;
+}
+
+.cprx-agent .agent-progresso > i {
+  display: block;
+  height: 100%;
+  background: var(--app-tinta, var(--agent-accento));
+  transition: width 300ms ease;
+}
+
+/* Il tasto principale di una schermata: pieno, tondo, largo quanto lo
+   schermo. Ce n'e' **uno solo** per vista, ed e' la ragione per cui i
+   filtri restano tinti e non pieni. */
+.cprx-agent .agent-scocca button.agent-cta {
+  width: 100%;
+  flex: 0 0 auto;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: var(--agent-pillola);
+  background: var(--agent-accento);
+  color: var(--agent-su-accento);
+  font-family: var(--agent-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  box-shadow: 0 0 30px -12px var(--agent-accento);
+}
+
+.cprx-agent .agent-scocca button.agent-cta:hover {
+  background: var(--agent-accento);
+  color: var(--agent-su-accento);
+  filter: brightness(1.1);
+}
+
+/* Due tasti affiancati si dividono la riga. Senza questo restano larghi
+   entrambi quanto lo schermo — e' la stessa trappola delle pillole: il
+   `width: 100%` di Foundry diventa la base flessibile. */
+.cprx-agent .agent-scocca .agent-riga > button.agent-cta {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+
+/* Il tasto lungo e scarico che chiude un elenco: «+ nuovo messaggio»,
+   «+ nuova nota». Non e' un `.agent-cta` — quello e' il comando della
+   schermata, e in cima a un elenco di conversazioni non c'e' un comando:
+   c'e' la cosa che si fa dopo aver letto. */
+.cprx-agent .agent-scocca button.agent-tasto-lungo {
+  width: 100%;
+  flex: 0 0 auto;
+  margin-top: 0.6rem;
+  padding: 0.7rem;
+  border: 0;
+  border-radius: var(--agent-pillola);
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.cprx-agent .agent-scocca button.agent-tasto-lungo:hover {
+  background: var(--agent-rilievo);
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-scocca button.agent-tasto-lungo.attivo {
+  color: var(--agent-accento);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--agent-accento) 45%, transparent);
+}
+
+/* Il tasto che cancella. Resta scarico come gli altri tasti lunghi — il
+   pieno e' del `.agent-cta` — ma si tinge di rosso: un ripristino non deve
+   somigliare a «blocca dispositivo», che sta due righe sopra. */
+.cprx-agent .agent-scocca button.agent-tasto-lungo.agent-pericolo {
+  color: var(--agent-critico);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--agent-critico) 35%, transparent);
+}
+
+.cprx-agent .agent-scocca button.agent-tasto-lungo.agent-pericolo:hover {
+  background: color-mix(in srgb, var(--agent-critico) 14%, var(--agent-pannello));
+  color: var(--agent-critico);
+}
+
+/* Il marchietto in fondo a una riga: lo stato in due parole, monospaziato e
+   tenue. Non e' una pastiglia colorata — quella tira l'occhio piu' del nome
+   della riga, ed e' la stessa ragione per cui il non letto e' un punto. */
+.cprx-agent .agent-marchietto {
+  flex: 0 0 auto;
+  align-self: center;
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+  text-align: right;
+}
+
+/* La cifra in fondo a una riga d'elenco: incolonnata, tabellare, come
+   nell'estratto conto. */
+.cprx-agent .agent-voce-cifra {
+  flex: 0 0 auto;
+  align-self: center;
+  font-family: var(--agent-mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--agent-testo);
+}
+
+/* Il punto del non letto. Sostituisce il contatore: quante righe non hai
+   letto non cambia niente, che ce ne siano lo cambia. */
+.cprx-agent .agent-punto {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--agent-accento);
+  box-shadow: 0 0 10px -1px var(--agent-accento);
+}
+
+/* La riga di una conversazione: nome e ora sulla prima riga, anteprima e
+   punto sulla seconda. Serve perche' l'ora deve stare **in linea** col
+   nome, e in un elenco a due righe generico finirebbe sotto. */
+.cprx-agent .agent-filo-riga .agent-voce-apri {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+/* `align-self: stretch` non e' decorativo: `.agent-voce-apri` allinea i suoi
+   figli a sinistra, quindi senza questo le due righe prendono la larghezza
+   del contenuto e sbordano — l'ora e il pallino finiscono fuori dalla
+   riga invece di stare al suo margine destro. */
+.cprx-agent .agent-filo-testata,
+.cprx-agent .agent-filo-coda {
+  display: flex;
+  align-items: baseline;
+  align-self: stretch;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.cprx-agent .agent-filo-coda { align-items: center; }
+
+.cprx-agent .agent-filo-testata > .agent-voce-titolo,
+.cprx-agent .agent-filo-coda > .agent-voce-sotto {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cprx-agent .agent-filo-quando {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.58rem;
+  color: var(--agent-tenue);
+}
+
+/* La scheda d'identita' in cima alle impostazioni: la stessa forma della
+   scheda d'apertura di un'App, ma alta una riga sola. */
+.cprx-agent .agent-identita-scheda {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex: 0 0 auto;
+  padding: 0.7rem 0.75rem;
+  border-radius: var(--agent-raggio);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 16%, transparent),
+    var(--agent-pannello) 70%);
+}
+
+.cprx-agent .agent-identita-testo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+/* Un'App di serie in catalogo: nessun tasto, perche' non c'e' niente da
+   comprare e niente da togliere. */
+.cprx-agent .agent-store-serie {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+/* La variante scarica: stessa forma, nessun riempimento. Serve ai comandi
+   che stanno accanto al principale senza essere quello principale. */
+.cprx-agent .agent-scocca button.agent-cta.scarica {
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  box-shadow: none;
+}
+
+.cprx-agent .agent-scocca button.agent-cta.scarica:hover {
+  background: var(--agent-rilievo);
+  color: var(--agent-testo);
+  filter: none;
+}
+
+.cprx-agent .agent-scocca button.agent-cta.rossa {
+  background: color-mix(in srgb, var(--agent-allarme) 12%, transparent);
+  color: var(--agent-allarme);
+  box-shadow: none;
+}
+
+.cprx-agent .agent-scocca button.agent-cta.rossa:hover {
+  background: color-mix(in srgb, var(--agent-allarme) 22%, transparent);
+  filter: none;
+}
+
+/* --- negozio -------------------------------------------------------- */
+
+.cprx-agent .agent-saldo {
+  font-family: var(--agent-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--agent-accento);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-pacchetti {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Le linguette di categoria sono pillole, come ogni filtro dell'App: e'
+   la stessa forma di `.agent-pillola`, e sta qui perche' il template le
+   marca gia' cosi' in mezza dozzina di viste. */
+.cprx-agent .agent-scocca button.agent-linguetta {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 0.35rem 0.8rem;
+  border: 0;
+  border-radius: var(--agent-pillola);
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-scocca button.agent-linguetta:hover {
+  background: var(--agent-rilievo);
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-scocca button.agent-linguetta.attiva,
+.cprx-agent .agent-scocca button.agent-linguetta.attiva:hover {
+  background: color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 14%, transparent);
+  border-color: transparent;
+  color: var(--app-tinta, var(--agent-accento));
+}
+
+.cprx-agent .agent-scocca button.attiva {
+  background: var(--agent-accento);
+  border-color: var(--agent-accento);
+  color: var(--agent-su-accento);
+}
+
+.cprx-agent .agent-riga {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cprx-agent .agent-riga input { flex: 1 1 auto; min-width: 0; }
+
+.cprx-agent .agent-scocca button.agent-conferma {
+  width: 100%;
+  flex: 0 0 auto;
+  padding: 0.42rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cprx-agent .agent-selettore {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-color: var(--agent-accento) !important;
+}
+
+.cprx-agent .agent-sotto { padding-left: 0.4rem; border-left: 2px solid var(--agent-linea); }
+
+.cprx-agent .agent-filtri {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.cprx-agent .agent-filtri input { flex: 1; }
+.cprx-agent .agent-filtri button {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.6rem;
+  white-space: nowrap;
+  font-size: 0.68rem;
+}
+
+/* Solo i bottoni che contengono unicamente un'icona sono quadrati. */
+.cprx-agent .agent-filtri button:has(> i:only-child) { width: 30px; padding: 0; }
+
+/* La vetrina e' un `.agent-elenco` come gli altri: la scheda tonda la mette
+   quello, qui restano solo il riquadro dell'immagine e la colonna del
+   prezzo. */
+.cprx-agent .agent-articolo.caro { opacity: 0.42; }
+
+/* Il riquadro dell'immagine e' sempre quadrato e sempre della stessa misura,
+   anche quando l'immagine non c'e': un elenco dove le righe con l'icona
+   rientrano e le altre no sembra storto. */
+.cprx-agent .agent-articolo-foto {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--agent-rilievo) 0 5px,
+    var(--agent-pannello) 5px 10px);
+  font-family: var(--agent-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-articolo-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: none;
+}
+
+.cprx-agent .agent-articolo-conto {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  text-align: right;
+}
+
+.cprx-agent .agent-articolo-prezzo {
+  font-family: var(--agent-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--agent-accento);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-articolo-scorta {
+  font-family: var(--agent-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+
+
+/* --- App Store ------------------------------------------------------ */
+
+.cprx-agent .agent-appstore {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.cprx-agent .agent-scheda-app {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.55rem;
+  border: 1px solid var(--agent-linea);
+  border-left: 3px solid var(--agent-linea);
+}
+
+.cprx-agent .agent-scheda-app.posseduta { border-left-color: var(--agent-accento); }
+
+.cprx-agent .agent-scheda-alto {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-scheda-icona {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border: 1px solid var(--agent-linea);
+  color: var(--agent-accento);
+  font-size: 1.05rem;
+}
+
+.cprx-agent .agent-scheda-icona.grande {
+  width: 72px;
+  height: 72px;
+  font-size: 1.9rem;
+}
+
+.cprx-agent .agent-scheda-testo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cprx-agent .agent-scheda-nome { font-weight: 600; font-size: 0.88rem; }
+
+.cprx-agent .agent-scheda-riga {
+  font-family: var(--agent-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-scheda-descrizione {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--agent-testo);
+  opacity: 0.9;
+}
+
+.cprx-agent .agent-scheda-azioni { display: flex; gap: 0.3rem; }
+.cprx-agent .agent-scheda-azioni button { flex: 1; padding: 0.32rem; font-size: 0.68rem; }
+
+/* --- App installata ------------------------------------------------- */
+
+.cprx-agent .agent-installata {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding-top: 0.4rem;
+}
+
+
+
+.cprx-agent .agent-installata-testo {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.cprx-agent .agent-installata button { padding: 0.35rem 0.9rem; font-size: 0.7rem; }
+.cprx-agent .agent-installata-testo { align-self: stretch; }
+
+/* --- moduli --------------------------------------------------------- */
+
+.cprx-agent .agent-modulo { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.cprx-agent .agent-campo { display: flex; flex-direction: column; gap: 0.15rem; }
+
+.cprx-agent .agent-campo-nome {
+  font-family: var(--agent-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent input,
+.cprx-agent textarea,
+.cprx-agent select {
+  background: var(--agent-fondo);
+  border: 1px solid var(--agent-linea);
+  border-radius: 0;
+  color: var(--agent-testo);
+  padding: 0.34rem 0.44rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.cprx-agent input:focus,
+.cprx-agent textarea:focus,
+.cprx-agent select:focus,
+.cprx-agent button:focus-visible {
+  outline: 2px solid var(--agent-accento);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.cprx-agent textarea { resize: vertical; }
+
+.cprx-agent .agent-modulo-azioni { display: flex; gap: 0.4rem; margin-top: 0.35rem; }
+
+.cprx-agent .agent-modulo-azioni button {
+  flex: 1;
+  padding: 0.42rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+}
+
+.cprx-agent .agent-scocca button.agent-primario,
+.cprx-agent .agent-primario {
+  background: var(--agent-accento);
+  border-color: var(--agent-accento);
+  color: var(--agent-su-accento);
+  font-weight: 700;
+}
+
+.cprx-agent .agent-scocca button.agent-primario:hover {
+  background: var(--agent-accento);
+  color: var(--agent-su-accento);
+  filter: brightness(1.15);
+}
+
+/* =====================================================================
+   Rete: messaggi, chiamate, guasto
+   ===================================================================== */
+
+/* --- Agent bruciato -------------------------------------------------- */
+
+.cprx-agent .agent-guasto {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.9rem;
+}
+
+.cprx-agent .agent-guasto-icona {
+  font-size: 2.6rem;
+  color: var(--agent-allarme);
+}
+
+.cprx-agent .agent-guasto-titolo {
+  font-family: var(--agent-mono);
+  font-size: 0.9rem;
+  letter-spacing: 0.28em;
+  text-indent: 0.28em;
+  text-transform: uppercase;
+  color: var(--agent-allarme);
+}
+
+.cprx-agent .agent-guasto .agent-installata-testo { text-align: center; }
+.cprx-agent .agent-guasto button { padding: 0.42rem 0.9rem; font-size: 0.72rem; }
+
+/* --- schermata di chiamata ------------------------------------------ */
+
+.cprx-agent .agent-chiamata {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-chiamata-stato {
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-chiamata-nome {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cprx-agent .agent-chiamata-numero {
+  font-family: var(--agent-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-chiamata-durata {
+  font-family: var(--agent-mono);
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  color: var(--agent-tenue);
+  margin-top: 0.4rem;
+}
+
+.cprx-agent .agent-chiamata-tasti {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.1rem;
+}
+
+/* I comandi secondari della chiamata: una griglia di tessere sopra il
+   tasto rosso. Nel progetto ce ne sono sei — muto, vivavoce, registra —
+   ma qui ci vanno solo quelli che fanno davvero qualcosa. */
+.cprx-agent .agent-chiamata-comandi {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.cprx-agent .agent-scocca button.agent-chiamata-comando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 0.3rem;
+  border: 1px solid var(--agent-linea);
+  border-radius: var(--agent-raggio-piccolo);
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca button.agent-chiamata-comando:hover {
+  border-color: #5ef2a0;
+  background: color-mix(in srgb, #5ef2a0 12%, transparent);
+  color: #5ef2a0;
+}
+
+.cprx-agent .agent-chiamata-comando i { font-size: 0.95rem; }
+
+.cprx-agent .agent-chiamata-comando span {
+  font-family: var(--agent-mono);
+  font-size: 0.47rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Il tondo con le iniziali: qui non ci sono immagini, e un cerchio vuoto
+   sarebbe peggio di due lettere. */
+.cprx-agent .agent-chiamata-tondo {
+  display: grid;
+  place-items: center;
+  width: 5.2rem;
+  height: 5.2rem;
+  border-radius: 50%;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-pannello);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--agent-accento);
+  box-shadow: 0 0 32px -12px var(--agent-accento);
+}
+
+/* Chi c'e' in una chiamata di gruppo, e chi sta ancora squillando. */
+.cprx-agent .agent-chiamata-gente {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem 0.55rem;
+  font-size: 0.72rem;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-chiamata-gente li {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.cprx-agent .agent-chiamata-gente li i { font-size: 0.6rem; }
+.cprx-agent .agent-chiamata-gente li.in-linea { color: var(--agent-testo); }
+.cprx-agent .agent-chiamata-gente li.in-linea i { color: var(--agent-ok, #2fbf6b); }
+
+.cprx-agent .agent-chiamata-invito {
+  width: 100%;
+  margin-top: 0.6rem;
+  text-align: left;
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-scuro {
+  background: var(--agent-pannello);
+  color: var(--agent-testo);
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 0.85rem;
+}
+
+/* La striscia della chiamata in secondo piano: sta sopra tutto, sotto la
+   barra di stato, e riporta dentro con un tocco. */
+.cprx-agent .agent-scocca button.agent-chiamata-striscia {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.3rem 0.75rem;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--agent-linea);
+  background: color-mix(in srgb, var(--agent-ok, #2fbf6b) 22%, var(--agent-fondo));
+  color: var(--agent-testo);
+  font-size: 0.72rem;
+  flex: 0 0 auto;
+  z-index: 8;
+}
+
+.cprx-agent .agent-chiamata-striscia i { color: var(--agent-ok, #2fbf6b); }
+.cprx-agent .agent-chiamata-striscia-nome { flex: 1; text-align: left; }
+
+.cprx-agent .agent-chiamata-striscia-durata {
+  font-family: var(--agent-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.cprx-agent .agent-scocca button.agent-rosso {
+  border-color: var(--agent-allarme);
+  color: var(--agent-allarme);
+}
+
+.cprx-agent .agent-scocca button.agent-rosso:hover {
+  background: var(--agent-allarme);
+  color: #fff;
+}
+
+/* --- elenco conversazioni ------------------------------------------- */
+
+/* Un filo non letto non si segna piu' col bordo a sinistra — quel posto
+   adesso e' dentro la scheda e lo usa lo stato di un lavoro. Si segna
+   dove lo segna un telefono: il nome piu' acceso e il pallino a destra. */
+.cprx-agent .agent-voce.nuovo .agent-voce-titolo { color: var(--agent-testo); }
+.cprx-agent .agent-voce:not(.nuovo) .agent-voce-titolo { color: color-mix(in srgb, var(--agent-testo) 78%, var(--agent-fondo)); }
+
+/* Il bottone occupa tutta la riga: il contorno lo da' gia' la voce. */
+.cprx-agent .agent-scocca button.agent-voce-apri,
+.cprx-agent .agent-scocca button.agent-voce-apri:hover {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  min-width: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: var(--agent-testo);
+  text-align: left;
+}
+
+.cprx-agent .agent-voce-apri:hover .agent-voce-titolo { color: var(--agent-accento); }
+.cprx-agent .agent-voce-apri .agent-voce-titolo,
+.cprx-agent .agent-voce-apri .agent-voce-sotto {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-conta {
+  flex: 0 0 auto;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: var(--agent-pillola);
+  background: var(--agent-allarme);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--agent-allarme) 60%, transparent);
+  color: #fff;
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* --- filo dei messaggi ---------------------------------------------- */
+
+.cprx-agent .agent-filo {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cprx-agent .agent-bolla {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+  max-width: 82%;
+  padding: 0.4rem 0.55rem;
+  background: var(--agent-pannello);
+  border-left: 2px solid var(--agent-linea);
+}
+
+/* Le mie stanno a destra e portano il colore d'accento. */
+.cprx-agent .agent-bolla.mia {
+  align-self: flex-end;
+  border-left: none;
+  border-right: 2px solid var(--agent-accento);
+  background: var(--agent-rilievo);
+}
+
+.cprx-agent .agent-bolla.squillo {
+  align-self: center;
+  max-width: 100%;
+  background: transparent;
+  border: none;
+  opacity: 0.65;
+}
+
+.cprx-agent .agent-bolla-testo {
+  font-size: 0.84rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cprx-agent .agent-bolla-ora {
+  align-self: flex-end;
+  font-family: var(--agent-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.08em;
+  color: var(--agent-tenue);
+}
+
+/* In un gruppo ogni bolla dice chi ha parlato: senza, sei fili diversi
+   dentro lo stesso filo e non si capisce chi ti sta scrivendo. */
+.cprx-agent .agent-bolla-mittente {
+  font-family: var(--agent-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--agent-accento);
+  margin-bottom: 0.12rem;
+}
+
+/* La riga dei membri sotto la testata di un gruppo. */
+.cprx-agent .agent-gruppo-membri {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0 0 0.4rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--agent-linea);
+  font-size: 0.68rem;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-gruppo-membri i { font-size: 0.62rem; }
+.cprx-agent .agent-gruppo-membri span { overflow-wrap: anywhere; }
+
+/* Un elenco di caselle: la spunta a sinistra, il nome accanto.
+   ATTENZIONE: la regola generica piu' sotto **nasconde** ogni checkbox
+   (`opacity: 0`, `position: absolute`, larghezza zero) perche' di serie le
+   caselle qui dentro diventano levette con un `.agent-leva` accanto. Una
+   lista da spuntare non e' una fila di interruttori, quindi qui la casella
+   torna visibile — e vanno rimessi **anche** `position` e `opacity`, non
+   solo le misure. */
+.cprx-agent .agent-scelte .agent-voce { padding: 0.4rem 0.6rem; }
+
+.cprx-agent .agent-scelta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  cursor: pointer;
+}
+
+.cprx-agent .agent-scelta input[type="checkbox"] {
+  flex: 0 0 auto;
+  position: static;
+  opacity: 1;
+  width: 0.85rem;
+  height: 0.85rem;
+  margin: 0;
+  padding: 0;
+  appearance: none;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-scelta input[type="checkbox"]:checked {
+  border-color: var(--agent-accento);
+  background: var(--agent-accento);
+  box-shadow: inset 0 0 0 2px var(--agent-pannello);
+}
+
+.cprx-agent .agent-scelta input[type="checkbox"]:focus-visible {
+  outline: 1px solid var(--agent-accento);
+  outline-offset: 1px;
+}
+
+.cprx-agent .agent-voce.di-gruppo .agent-voce-titolo i {
+  font-size: 0.7rem;
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-bolla.squillo .agent-bolla-testo {
+  font-family: var(--agent-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cprx-agent .agent-scrivi {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.3rem;
+  position: sticky;
+  bottom: 0;
+  padding-top: 0.35rem;
+  background: var(--agent-fondo);
+}
+
+/* La barra di scrittura del prototipo: il campo e' una pillola senza bordo
+   e l'invio e' un tondo pieno con la tinta dell'App. Un rettangolo con
+   dentro una freccia, in fondo a un filo di bolle tonde, era l'unico
+   spigolo rimasto sullo schermo. */
+.cprx-agent .agent-scrivi textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  resize: none;
+  border: 0;
+  border-radius: 1.1rem;
+  background: var(--agent-pannello);
+  padding: 0.6rem 0.9rem;
+}
+
+.cprx-agent .agent-scocca .agent-scrivi button.agent-primario {
+  flex: 0 0 auto;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--agent-accento);
+  color: var(--agent-su-accento);
+  box-shadow: 0 0 26px -10px var(--agent-accento);
+}
+
+.cprx-agent .agent-scocca .agent-scrivi button.agent-primario:hover {
+  background: var(--agent-accento);
+  filter: brightness(1.1);
+}
+
+/* --- tastierino ------------------------------------------------------ */
+
+/* --- Phone: display, tastierino, linguette in basso ------------------- */
+
+/* Il numero composto sta grande e in mezzo: e' il display di un telefono,
+   non un campo di un modulo. */
+.cprx-agent .agent-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 3.4rem;
+  margin: 0.2rem 0 0.7rem;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-display input,
+.cprx-agent .agent-display input:focus {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  text-align: center;
+  font-family: var(--agent-mono);
+  font-size: 1.7rem;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  color: var(--agent-testo);
+  font-variant-numeric: tabular-nums;
+}
+
+.cprx-agent .agent-display-nota {
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--app-tinta, var(--agent-accento));
+}
+
+.cprx-agent .agent-tastierino {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  margin: 0 auto;
+  max-width: 15rem;
+}
+
+.cprx-agent .agent-scocca button.agent-tasto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--agent-pannello);
+  font-variant-numeric: tabular-nums;
+}
+
+.cprx-agent .agent-scocca button.agent-tasto:hover {
+  background: var(--agent-rilievo);
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-tasto-cifra { font-size: 1.15rem; line-height: 1; }
+
+.cprx-agent .agent-tasto-lettere {
+  font-family: var(--agent-mono);
+  font-size: 0.44rem;
+  letter-spacing: 0.18em;
+  color: var(--agent-tenue);
+  min-height: 0.6em;
+}
+
+/* Verde in mezzo, cancellazione a destra, e a sinistra un vuoto della
+   stessa misura: senza, il tasto di chiamata scivola fuori asse. */
+.cprx-agent .agent-chiama-riga {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  padding: 1.1rem 0 0.3rem;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-chiama-vuoto {
+  flex: 0 0 auto;
+  width: 2.7rem;
+}
+
+/* Sul tastierino il verde e' grande quanto un tasto: e' il tasto. */
+.cprx-agent .agent-scocca .agent-chiama-riga button.agent-tondo-verde {
+  width: 3.8rem;
+  height: 3.8rem;
+  font-size: 1.3rem;
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-nudo,
+.cprx-agent .agent-scocca button.agent-tondo-nudo:hover {
+  width: 2.7rem;
+  height: 2.7rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--agent-tenue);
+  font-size: 1rem;
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-nudo:hover {
+  background: var(--agent-pannello);
+  color: var(--agent-testo);
+}
+
+/* Il tasto di chiamata e' tondo e verde in tutti i temi: e' l'unico comando
+   di questa schermata, e su un telefono quel tasto e' sempre quello. */
+.cprx-agent .agent-scocca button.agent-tondo {
+  width: 3.1rem;
+  height: 3.1rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.1rem;
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-verde {
+  border-color: #5ef2a0;
+  background: #5ef2a0;
+  color: #04120a;
+  box-shadow: 0 0 34px -8px #5ef2a0;
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-verde:hover {
+  background: #7cf7b4;
+  border-color: #7cf7b4;
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-rosso {
+  border-color: #ff2e6e;
+  background: #ff2e6e;
+  color: #0b0d12;
+  box-shadow: 0 0 32px -6px rgba(255, 46, 110, 0.8);
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-rosso:hover {
+  background: #ff5185;
+  border-color: #ff5185;
+}
+
+/* Il tastino tondo in fondo a una riga: chiama, apri la scheda. Non e' un
+   bottone quadrato con un contorno — dentro una scheda quel contorno
+   diventerebbe un reticolo di riquadri. */
+.cprx-agent .agent-scocca button.agent-tondo-piccolo {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 50%;
+  background: var(--agent-rilievo);
+  color: var(--agent-tenue);
+  font-size: 0.68rem;
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-piccolo.acceso {
+  background: color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 14%, transparent);
+  color: var(--app-tinta, var(--agent-accento));
+}
+
+.cprx-agent .agent-scocca button.agent-tondo-piccolo:hover {
+  background: color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 26%, transparent);
+  color: var(--app-tinta, var(--agent-accento));
+}
+
+/* --- la scheda di un contatto ---------------------------------------- */
+
+.cprx-agent .agent-contatto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding-top: 0.4rem;
+}
+
+.cprx-agent .agent-contatto > .agent-elenco,
+.cprx-agent .agent-contatto > .agent-sezione-riga,
+.cprx-agent .agent-contatto > .agent-riga,
+.cprx-agent .agent-contatto > .agent-nota { align-self: stretch; }
+
+.cprx-agent .agent-contatto > .agent-sezione-riga { margin-top: 0.6rem; }
+
+.cprx-agent .agent-tondo-iniziali.grande {
+  width: 5.2rem;
+  height: 5.2rem;
+  font-size: 2rem;
+  box-shadow:
+    0 0 0 1px var(--agent-linea),
+    0 0 40px -14px var(--app-tinta, var(--agent-accento));
+}
+
+.cprx-agent .agent-contatto-nome {
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.cprx-agent .agent-contatto-comandi {
+  display: flex;
+  justify-content: center;
+  gap: 1.4rem;
+  margin: 0.9rem 0 0.4rem;
+}
+
+.cprx-agent .agent-scocca button.agent-comando-tondo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.cprx-agent .agent-scocca button.agent-comando-tondo:hover { background: transparent; }
+
+.cprx-agent .agent-comando-cerchio {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 12%, transparent);
+  color: var(--app-tinta, var(--agent-accento));
+  font-size: 1rem;
+  transition: background 150ms ease;
+}
+
+.cprx-agent .agent-comando-cerchio.secondo {
+  background: color-mix(in srgb, var(--agent-secondo) 12%, transparent);
+  color: var(--agent-secondo);
+}
+
+/* La stella e' spenta finche' non la accendi: e' l'unico comando di questa
+   fila che ha uno stato, e si vede da qui se il contatto e' un preferito. */
+.cprx-agent .agent-comando-cerchio.stella {
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-comando-cerchio.stella.acceso {
+  background: color-mix(in srgb, #ffc93a 14%, transparent);
+  color: #ffc93a;
+}
+
+.cprx-agent .agent-comando-tondo:hover .agent-comando-cerchio {
+  background: color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 26%, transparent);
+}
+
+/* Una chiamata persa si riconosce dal rosso, come su un telefono vero. */
+.cprx-agent .agent-recente-icona { flex: 0 0 auto; color: var(--agent-tenue); }
+.cprx-agent .agent-voce.persa .agent-recente-icona,
+.cprx-agent .agent-voce.persa .agent-voce-titolo { color: var(--agent-allarme); }
+
+/* Le linguette in fondo all'App. Non sono un reticolo di caselle: sono
+   quattro tessere tonde su un fondo unico, come il dock — e la linguetta
+   accesa si riempie invece di prendere un filo sotto. */
+.cprx-agent .agent-linguette-basso {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.15rem;
+  /* I margini negativi annullano il padding di `.agent-schermo`, che in
+     basso e' 0.85rem e non 1.15rem: con -1.15rem la barra sporgeva di
+     cinque pixel oltre lo schermo e ci compariva la barra di scorrimento. */
+  margin: auto -0.75rem -0.85rem;
+  padding: 0.3rem 0.4rem 0.5rem;
+  border-top: 1px solid var(--agent-separatore);
+  background: var(--agent-fondo);
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-scocca button.agent-linguetta-basso {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.22rem;
+  padding: 0.4rem 0.2rem 0.4rem;
+  border: 0;
+  border-radius: var(--agent-raggio-piccolo);
+  background: transparent;
+  color: var(--agent-tenue);
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca button.agent-linguetta-basso:hover {
+  background: var(--agent-pannello);
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-scocca button.agent-linguetta-basso.attiva {
+  background: color-mix(in srgb, var(--agent-accento) 12%, transparent);
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-linguetta-basso i { font-size: 0.85rem; }
+
+.cprx-agent .agent-linguetta-basso span {
+  font-family: var(--agent-mono);
+  font-size: 0.48rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cprx-agent .agent-linguetta-basso .agent-conta {
+  position: absolute;
+  top: 0.25rem;
+  right: 22%;
+}
+
+/* --- riquadro di stato delle App ------------------------------------ */
+
+/* Il riquadro di stato di un'App e' la stessa scheda d'apertura di
+   `.agent-eroe`, centrata: porta la tinta dell'App e nessuna cornice. */
+.cprx-agent .agent-sfida {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.95rem 0.8rem;
+  border-radius: var(--agent-raggio);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 14%, transparent), transparent 70%),
+    var(--agent-pannello);
+  text-align: center;
+}
+
+.cprx-agent .agent-sfida .agent-modulo-azioni { width: 100%; }
+
+.cprx-agent .agent-allarme-riga {
+  margin: 0;
+  padding: 0.4rem 0.5rem;
+  border-left: 3px solid var(--agent-allarme);
+  background: color-mix(in srgb, var(--agent-allarme) 12%, transparent);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.cprx-agent .agent-allarme-riga i { color: var(--agent-allarme); margin-right: 0.3rem; }
+
+/* La regola generica sugli input mette bordo, fondo e padding a QUALUNQUE
+   input, checkbox comprese — che il riquadro ce l'hanno gia' loro. Erano
+   due riquadri annidati, e il padding scentrava quello interno. Le caselle
+   si tolgono da quella regola e diventano una levetta vera. */
+.cprx-agent input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  position: absolute;
+  opacity: 0;
+}
+
+.cprx-agent .agent-interruttore {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0.3rem 0;
+}
+
+.cprx-agent .agent-interruttore-nome { min-width: 0; }
+
+/* La levetta: un binario e un cursore, gli stessi della pagina di sistema. */
+.cprx-agent .agent-leva {
+  width: 36px;
+  height: 18px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2px;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-fondo);
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.cprx-agent .agent-leva::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  display: block;
+  background: var(--agent-tenue);
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+
+.cprx-agent input[type="checkbox"]:checked + .agent-leva,
+.cprx-agent .agent-leva.acceso {
+  justify-content: flex-end;
+  border-color: var(--agent-accento);
+  background: color-mix(in srgb, var(--agent-accento) 12%, transparent);
+}
+
+.cprx-agent input[type="checkbox"]:checked + .agent-leva::after,
+.cprx-agent .agent-leva.acceso::after {
+  background: var(--agent-accento);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--agent-accento) 70%, transparent);
+}
+
+.cprx-agent input[type="checkbox"]:focus-visible + .agent-leva {
+  outline: 2px solid var(--agent-accento);
+  outline-offset: 1px;
+}
+
+.cprx-agent input[type="checkbox"]:disabled + .agent-leva { opacity: 0.5; }
+
+/* --- fascicolo NCPD -------------------------------------------------- */
+
+.cprx-agent .agent-fascicolo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.6rem;
+  border: 1px solid var(--agent-linea);
+  border-left: 3px solid var(--agent-allarme);
+}
+
+.cprx-agent .agent-fascicolo-nome {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cprx-agent .agent-fascicolo-alias {
+  font-family: var(--agent-mono);
+  font-size: 0.7rem;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-fascicolo-riga {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--agent-linea);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.cprx-agent .agent-fascicolo-taglia {
+  font-family: var(--agent-mono);
+  font-weight: 700;
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-nota {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--agent-tenue);
+}
+
+/* =====================================================================
+   Le carte in chat
+   Qui non passa corrispondenza: messaggi e chiamate restano nell'Agent,
+   e le buste che li trasportano sono nascoste sempre. Restano solo le
+   carte pubbliche delle App — un tiro, un duello, una scansione — che
+   vivono fuori dalla finestra dell'Agent e quindi non vedono le
+   variabili del tema: se le portano dietro.
+   ===================================================================== */
+
+/* La busta e' un mezzo di trasporto, non qualcosa da leggere. La nasconde
+   gia' l'hook su renderChatMessage; questa regola serve a non farla
+   lampeggiare nell'istante fra la resa e l'hook. */
+.chat-message:has(.cprx-busta) { display: none; }
+
+/* La carta si porta dietro fondo e testo, non li eredita: fuori di qui il
+   colore del testo lo decide il tema di Foundry, e in scuro finiva testo
+   scuro su fondo scuro. Un pannello che si dipinge da solo e' leggibile in
+   tutti e due i temi, e somiglia anche di piu' allo schermo dell'Agent. */
+.cprx-carta {
+  --carta-fondo: #14141b;
+  --carta-linea: #2e2e3c;
+  --carta-accento: #f5d90a;
+  --carta-testo: #e8e6f0;
+  --carta-tenue: #9a97ab;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.15rem 0;
+  padding: 0.5rem 0.6rem;
+  background: var(--carta-fondo);
+  color: var(--carta-testo);
+  border: 1px solid var(--carta-linea);
+  border-left: 3px solid var(--carta-accento);
+  font-family: "Roboto Condensed", "Signika", "Arial Narrow", sans-serif;
+}
+
+/* Foundry colora i discendenti della chat: qui dentro vince la carta. */
+.cprx-carta,
+.cprx-carta p,
+.cprx-carta span { color: var(--carta-testo); }
+
+.cprx-carta--chiamata { border-left-color: #4fb477; }
+.cprx-carta--sfida,
+.cprx-carta--esito { border-left-color: #e5262c; }
+.cprx-carta--servizio { border-left-color: #b46cf0; }
+
+.cprx-carta-testata {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.cprx-carta-testata i { color: var(--carta-accento); font-size: 0.75rem; }
+
+.cprx-carta-titolo {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-carta .cprx-carta-riga {
+  flex: 0 0 auto;
+  font-family: ui-monospace, "SFMono-Regular", "Consolas", monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  color: var(--carta-tenue);
+}
+
+.cprx-carta .cprx-carta-testata i { color: var(--carta-accento); }
+
+.cprx-carta-testo {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cprx-carta .cprx-carta-nota {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--carta-tenue);
+}
+
+/* =====================================================================
+   Il tasto fuori dalla finestra
+   ===================================================================== */
+
+/* L'id serve a battere le regole di Foundry su #ui-top, che altrimenti
+   allargano il bottone a tutta la barra. */
+#cprx-agent-tasto.cprx-tasto {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: fit-content;
+  max-width: 140px;
+  height: 24px;
+  padding: 0 0.55rem;
+  flex: 0 0 auto;
+  background: #101014;
+  border: 1px solid #f5d90a;
+  border-radius: 0;
+  color: #f5d90a;
+  font-family: ui-monospace, "SFMono-Regular", "Consolas", monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: all;
+  box-shadow: none;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+#cprx-agent-tasto.cprx-tasto:hover { background: #f5d90a; color: #101014; }
+
+#cprx-agent-tasto.cprx-tasto--navigazione {
+  align-self: flex-start;
+  margin: 0.25rem auto 0 0.5rem;
+}
+
+/* In alto a destra, appena a sinistra della barra laterale. */
+#cprx-agent-tasto.cprx-tasto--flottante {
+  position: fixed;
+  top: 8px;
+  right: 316px;
+  z-index: 70;
+}
+
+/* =====================================================================
+   Il vetro e la schermata principale
+   Dal progetto "Agent Phone Cyberpunk". La scocca del telefono, la
+   tacca e i tasti laterali del mockup non ci sono: qui la finestra di
+   Foundry e' gia' il telefono, e disegnarne un altro dentro avrebbe
+   voluto dire due cornici. Resta tutto il resto — vetro, tipografia
+   monospaziata, filetti, pagine che scorrono.
+   ===================================================================== */
+
+/* Righe di scansione sempre presenti, spazzata luminosa opzionale.
+   Nessuna delle due intercetta il mouse. */
+.cprx-agent .agent-vetro,
+.cprx-agent .agent-spazzata {
+  position: absolute;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.cprx-agent .agent-vetro {
+  inset: 0;
+  background: repeating-linear-gradient(180deg,
+    rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 3px);
+}
+
+.cprx-agent .agent-spazzata {
+  left: 0;
+  right: 0;
+  height: 160px;
+  background: linear-gradient(180deg, transparent,
+    color-mix(in srgb, var(--agent-accento) 6%, transparent) 55%, transparent);
+  animation: agent-spazzata 7s linear infinite;
+}
+
+@keyframes agent-spazzata {
+  0%   { transform: translateY(-20%) }
+  100% { transform: translateY(120%) }
+}
+
+/* Il tema chiaro non regge le righe di scansione: su fondo pallido
+   diventano sporcizia invece che vetro. */
+.cprx-agent.tema-chiaro .agent-vetro,
+.cprx-agent.tema-chiaro .agent-spazzata { display: none; }
+
+/* --- l'impianto della home ------------------------------------------ */
+
+.cprx-agent .agent-home {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Finestra sulle pagine: qui non si scorre mai, ne' in su ne' di lato. */
+.cprx-agent .agent-vetrino {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.cprx-agent .agent-pista {
+  display: flex;
+  width: 300%;
+  height: 100%;
+  transition: transform 0.38s cubic-bezier(0.22, 0.9, 0.28, 1);
+  cursor: grab;
+}
+
+.cprx-agent .agent-pista:active { cursor: grabbing; }
+
+/* Ogni pagina scorre per conto suo. La larghezza e' un terzo della
+   pista, non della finestra. */
+.cprx-agent .agent-pagina {
+  width: 33.3333%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.55rem 0.8rem 0.7rem;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Il quadro non scorre: e' una schermata di blocco, non una lista. Quello
+   che non ci sta viene tagliato via — le notifiche in fondo spariscono
+   invece di allungare la pagina. */
+.cprx-agent .agent-pagina.quadro {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* L'elenco prende lo spazio che avanza e nasconde il resto. `min-height:0`
+   serve: senza, un figlio flex non si stringe sotto il proprio contenuto e
+   la pagina cresce lo stesso. */
+.cprx-agent .agent-pagina.quadro .agent-avvisi {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Una riga tagliata a meta' e' peggio di una riga in meno: l'ultima
+   visibile sfuma invece di essere mozzata. */
+.cprx-agent .agent-pagina.quadro .agent-avvisi::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, var(--agent-fondo));
+}
+
+.cprx-agent .agent-pagina.quadro .agent-avvisi { position: relative; }
+
+.cprx-agent .agent-pagina::-webkit-scrollbar { width: 0; height: 0; }
+.cprx-agent .agent-pagina { scrollbar-width: none; }
+
+/* --- etichette e filetti -------------------------------------------- */
+
+.cprx-agent .agent-etichetta {
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-etichetta.acceso { color: var(--agent-accento); }
+
+.cprx-agent .agent-sezione-riga {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 1.15rem 0 0.55rem;
+}
+
+.cprx-agent .agent-filetto {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--agent-linea), transparent);
+}
+
+/* --- pagina 0: quadro ----------------------------------------------- */
+
+.cprx-agent .agent-data {
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.3em;
+  color: var(--agent-tenue);
+  margin: 0.35rem 0 0.1rem;
+}
+
+.cprx-agent .agent-orologione {
+  font-size: 3.4rem;
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--agent-testo);
+  font-variant-numeric: tabular-nums;
+}
+
+.cprx-agent .agent-blocco {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.1rem;
+  padding: 0.75rem;
+  border: 1px solid var(--agent-linea);
+  background: linear-gradient(105deg,
+    color-mix(in srgb, var(--agent-accento) 9%, transparent),
+    transparent 65%);
+}
+
+/* Le due squadrette agli angoli del ritratto: sono il segno del
+   progetto, e costano due pseudo-elementi. */
+.cprx-agent .agent-ritratto-cornice {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  display: block;
+}
+
+.cprx-agent .agent-ritratto-cornice::before,
+.cprx-agent .agent-ritratto-cornice::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  z-index: 1;
+}
+
+.cprx-agent .agent-ritratto-cornice::before {
+  left: 0;
+  top: 0;
+  border-left: 2px solid var(--agent-accento);
+  border-top: 2px solid var(--agent-accento);
+}
+
+.cprx-agent .agent-ritratto-cornice::after {
+  right: 0;
+  bottom: 0;
+  border-right: 2px solid var(--agent-accento);
+  border-bottom: 2px solid var(--agent-accento);
+}
+
+.cprx-agent .agent-ritratto-cornice .agent-ritratto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+  display: block;
+}
+
+.cprx-agent .agent-blocco-testo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.cprx-agent .agent-blocco-nome {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-blocco-vero,
+.cprx-agent .agent-blocco-riga {
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-blocco-riga {
+  letter-spacing: 0.2em;
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-blocco-riga::before { content: "● "; }
+
+/* Il conto: la cifra e' l'unica cosa grande della pagina. */
+.cprx-agent .agent-conto {
+  margin-top: 0.7rem;
+  padding: 0.95rem 0.85rem;
+  border-radius: var(--agent-raggio);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 12%, transparent), transparent 70%),
+    var(--agent-pannello);
+}
+
+.cprx-agent .agent-conto-alto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-conto-numero-riga {
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  color: var(--agent-secondo);
+}
+
+.cprx-agent .agent-conto-cifra {
+  font-family: var(--agent-mono);
+  font-size: 2rem;
+  line-height: 1.2;
+  color: var(--agent-accento);
+  text-shadow: 0 0 22px color-mix(in srgb, var(--agent-accento) 35%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tre celle separate da un filo solo: e' il fondo che passa in mezzo. */
+.cprx-agent .agent-celle {
+  display: flex;
+  gap: 1px;
+  margin-top: 0.6rem;
+  background: var(--agent-linea);
+}
+
+.cprx-agent .agent-cella {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.25rem;
+  text-align: center;
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-cella-valore {
+  display: block;
+  font-family: var(--agent-mono);
+  font-size: 0.95rem;
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-cella-nome {
+  display: block;
+  margin-top: 0.2rem;
+  font-family: var(--agent-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- avvisi (i recenti, nella forma del progetto) -------------------- */
+
+.cprx-agent .agent-avvisi {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cprx-agent .agent-scocca .agent-avviso {
+  display: flex;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.6rem;
+  text-align: left;
+  border: 1px solid var(--agent-linea);
+  border-left: 2px solid var(--agent-tenue);
+  border-radius: 0;
+  background: var(--agent-pannello);
+  color: inherit;
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca .agent-avviso:hover {
+  background: var(--agent-rilievo);
+  border-left-color: var(--agent-accento);
+}
+
+/* Il bordo a sinistra dice di che notifica si tratta, senza scriverlo:
+   giallo la corrispondenza, cyan i soldi in entrata e il master, rosso
+   quello che e' andato storto. */
+.cprx-agent .agent-avviso.genere-sms,
+.cprx-agent .agent-avviso.genere-chiamata { border-left-color: var(--agent-accento); }
+.cprx-agent .agent-avviso.genere-entrata,
+.cprx-agent .agent-avviso.genere-master { border-left-color: var(--agent-secondo); }
+.cprx-agent .agent-avviso.genere-persa,
+.cprx-agent .agent-avviso.genere-sfida { border-left-color: var(--agent-critico); }
+.cprx-agent .agent-avviso.genere-uscita { border-left-color: var(--agent-tenue); }
+
+.cprx-agent .agent-avviso.genere-entrata .agent-avviso-icona,
+.cprx-agent .agent-avviso.genere-master .agent-avviso-icona { color: var(--agent-secondo); }
+.cprx-agent .agent-avviso.genere-persa .agent-avviso-icona,
+.cprx-agent .agent-avviso.genere-sfida .agent-avviso-icona { color: var(--agent-critico); }
+.cprx-agent .agent-avviso.genere-uscita .agent-avviso-icona { color: var(--agent-tenue); }
+
+/* Non letta: il titolo pesa di piu' e un punto d'accento la marca. */
+.cprx-agent .agent-avviso.nuovo .agent-avviso-titolo { color: var(--agent-accento); }
+
+.cprx-agent .agent-avviso.nuovo .agent-avviso-titolo::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 0.35rem;
+  border-radius: 50%;
+  background: var(--agent-accento);
+  vertical-align: middle;
+}
+
+.cprx-agent .agent-avviso-icona {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--agent-linea);
+  color: var(--agent-accento);
+  font-size: 0.7rem;
+}
+
+
+.cprx-agent .agent-avviso-testo {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.cprx-agent .agent-avviso-alto {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-avviso-titolo {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--agent-testo);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-avviso-ora {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-avviso-riga {
+  font-size: 0.78rem;
+  color: var(--agent-tenue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- pagina 2: rete e sistema --------------------------------------- */
+
+.cprx-agent .agent-quadretti {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-quadretto {
+  padding: 0.75rem;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-pannello);
+  min-width: 0;
+}
+
+.cprx-agent .agent-quadretto-valore {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--agent-mono);
+  font-size: 1.3rem;
+  line-height: 1.3;
+  color: var(--agent-accento);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cprx-agent .agent-quadretto-valore.secondo { color: var(--agent-secondo); }
+.cprx-agent .agent-quadretto-valore.critico { color: var(--agent-critico); }
+
+.cprx-agent .agent-quadretto-nota {
+  display: block;
+  margin-top: 0.3rem;
+  font-family: var(--agent-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-barra {
+  display: block;
+  height: 3px;
+  margin-top: 0.35rem;
+  background: var(--agent-linea);
+}
+
+.cprx-agent .agent-barra i {
+  display: block;
+  height: 100%;
+  background: var(--agent-secondo);
+}
+
+.cprx-agent .agent-righe {
+  margin-top: 0.5rem;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-riga-stato {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid var(--agent-linea);
+}
+
+.cprx-agent .agent-riga-stato:last-child { border-bottom: 0; }
+
+.cprx-agent .agent-riga-nome {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-riga-valore {
+  font-family: var(--agent-mono);
+  font-size: 0.85rem;
+  color: var(--agent-accento);
+}
+
+/* Le righe della pagina di sistema che sono bottoni: si premono e
+   commutano subito, senza tasto di conferma. */
+.cprx-agent .agent-scocca button.agent-riga-stato {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--agent-linea);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca button.agent-riga-stato:hover { background: var(--agent-rilievo); }
+.cprx-agent .agent-scocca button.agent-riga-stato:disabled { cursor: default; opacity: 0.6; }
+.cprx-agent .agent-righe > :last-child { border-bottom: 0; }
+
+/* Una riga che porta da un'altra parte, non un interruttore: la freccia a
+   destra e' l'unica cosa che le distingue, e basta. */
+.cprx-agent .agent-riga-vai > i {
+  flex: 0 0 auto;
+  color: var(--agent-tenue);
+  font-size: 0.62rem;
+}
+
+.cprx-agent .agent-scocca button.agent-riga-vai:hover > i { color: var(--agent-accento); }
+
+.cprx-agent .agent-registro {
+  padding: 0.7rem;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-pannello);
+  font-family: var(--agent-mono);
+  font-size: 0.68rem;
+  line-height: 2;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-registro span { color: var(--agent-accento); }
+.cprx-agent .agent-registro span.allarme { color: var(--agent-critico); }
+
+/* --- pallini e barra in basso --------------------------------------- */
+
+.cprx-agent .agent-pallini {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0 0.45rem;
+  flex: 0 0 auto;
+}
+
+/* Il bersaglio del clic e' alto quanto un dito, la riga visibile e'
+   sottile: sta nel figlio, non nel bottone. */
+.cprx-agent .agent-scocca .agent-pallino-pagina {
+  width: 26px;
+  height: 14px;
+  min-width: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca .agent-pallino-pagina span {
+  display: block;
+  width: 10px;
+  height: 3px;
+  background: var(--agent-linea);
+  transition: width 0.2s, background-color 0.2s;
+}
+
+.cprx-agent .agent-scocca .agent-pallino-pagina:hover span { background: var(--agent-tenue); }
+
+.cprx-agent .agent-scocca .agent-pallino-pagina.attivo span {
+  width: 22px;
+  background: var(--agent-accento);
+}
+
+
+/* =====================================================================
+   Prima accensione
+
+   Non e' un'App e non ha una testata: e' la schermata che viene prima di
+   tutto, e per questo prende l'accento del tema — come la home e il vetro
+   di blocco, e per la stessa ragione. Qui l'Agent non ha ancora una marca.
+   ===================================================================== */
+
+.cprx-agent .agent-setup {
+  position: relative;
+  z-index: 2;
+  gap: 0.15rem;
+}
+
+/* I punti dei passi: dove sei, non quanto manca. Un «3 di 5» sarebbe stato
+   un numero da leggere in una schermata dove non si legge niente. */
+.cprx-agent .agent-setup-passi {
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0 0.9rem;
+}
+
+.cprx-agent .agent-setup-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--agent-linea);
+  transition: background 0.18s, width 0.18s;
+}
+
+.cprx-agent .agent-setup-punto.fatto {
+  width: 16px;
+  border-radius: 999px;
+  background: var(--agent-accento);
+}
+
+.cprx-agent .agent-setup-eroe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.6rem 1rem 1.4rem;
+  text-align: center;
+}
+
+.cprx-agent .agent-setup-eroe > i {
+  font-size: 2.4rem;
+  color: var(--agent-accento);
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--agent-accento) 45%, transparent));
+}
+
+.cprx-agent .agent-setup-titolo {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-setup-sotto {
+  font-family: var(--agent-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+/* La frase che vedrai all'accensione, mentre la scegli. Senza, «saluto col
+   nome» e' un interruttore che non si capisce cosa accende. */
+.cprx-agent .agent-setup-anteprima {
+  margin: 0.7rem 0 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--agent-raggio);
+  background: linear-gradient(150deg,
+    color-mix(in srgb, var(--agent-accento) 16%, transparent),
+    var(--agent-pannello));
+  color: var(--agent-testo);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* I due tasti in fondo. `margin-top: auto` li tiene giu' anche quando il
+   passo e' corto: una schermata di setup con il tasto a meta' schermo
+   sembra caricata male.
+   E restano **appiccicati** al fondo, perche' il passo dell'aspetto e' piu'
+   alto dello schermo: senza, «avanti» finisce sotto la piega e per uscire
+   dal setup bisogna indovinare che si scorre. Il velo sotto non e'
+   decorazione — sono tasti sopra del contenuto che scorre.
+   `bottom: -0.85rem` annulla il padding basso di `.agent-schermo`: e' la
+   stessa misura della barra delle linguette, e se quel padding cambia
+   cambia anche questa. */
+.cprx-agent .agent-setup-fondo {
+  position: sticky;
+  bottom: -0.85rem;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-top: auto;
+  padding: 1rem 0 0.85rem;
+  background: linear-gradient(180deg, transparent, var(--agent-fondo) 22%);
+}
+
+/* =====================================================================
+   Schermata di blocco
+   ===================================================================== */
+
+.cprx-agent .agent-blocco-vetro {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2.2rem 1.2rem 1.4rem;
+  text-align: center;
+}
+
+.cprx-agent .agent-blocco-ora {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cprx-agent .agent-blocco-data {
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+  margin-top: 0.2rem;
+}
+
+.cprx-agent .agent-blocco-chi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  margin-top: 1.4rem;
+}
+
+.cprx-agent .agent-blocco-avviso {
+  margin-top: 0.9rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--agent-linea);
+  border-left: 2px solid var(--agent-accento);
+  background: var(--agent-pannello);
+  font-family: var(--agent-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-blocco-avviso i { color: var(--agent-accento); }
+
+/* L'impronta sta in basso, dove sta il dito. Il margine automatico la
+   spinge in fondo senza bisogno di posizionarla. */
+.cprx-agent .agent-scocca button.agent-impronta {
+  margin-top: auto;
+  width: 74px;
+  height: 74px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--agent-linea);
+  border-radius: 50%;
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  font-size: 2.1rem;
+  transition: color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.cprx-agent .agent-scocca button.agent-impronta:hover {
+  color: var(--agent-accento);
+  border-color: var(--agent-accento);
+  box-shadow: 0 0 30px -6px color-mix(in srgb, var(--agent-accento) 55%, transparent);
+}
+
+.cprx-agent .agent-blocco-invito {
+  margin-top: 0.55rem;
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+/* Un lampo d'accento quando l'impronta prende: dura meno di mezzo secondo
+   e non lascia niente attaccato. */
+.cprx-agent.in-sblocco .agent-scocca::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: var(--agent-accento);
+  animation: agent-sblocco 0.4s ease-out forwards;
+}
+
+@keyframes agent-sblocco {
+  0%   { opacity: 0.22 }
+  100% { opacity: 0 }
+}
+
+/* =====================================================================
+   Scheda del dispositivo, banca, console del master
+   ===================================================================== */
+
+/* Le tre cifre del quadro: rubrica, lavori aperti, street cred. Sono tre
+   celle attaccate con un filo in mezzo — quello che nel progetto di design
+   sta sotto il blocco dell'identita'. */
+.cprx-agent .agent-cifre {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin-top: 0.7rem;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-linea);
+}
+
+.cprx-agent .agent-cifra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.7rem 0.3rem;
+  background: var(--agent-pannello);
+  text-align: center;
+}
+
+.cprx-agent .agent-cifra-valore {
+  font-family: var(--agent-mono);
+  font-size: 1.05rem;
+  line-height: 1;
+  color: var(--agent-testo);
+  font-variant-numeric: tabular-nums;
+}
+
+.cprx-agent .agent-cifra .agent-etichetta { letter-spacing: 0.16em; }
+
+/* --- banca ----------------------------------------------------------- */
+
+.cprx-agent .agent-movimento {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--agent-linea);
+  border-left: 2px solid var(--agent-allarme);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-movimento.entrata { border-left-color: var(--agent-secondo); }
+
+.cprx-agent .agent-movimento-cifra {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.95rem;
+  color: var(--agent-allarme);
+}
+
+.cprx-agent .agent-movimento.entrata .agent-movimento-cifra { color: var(--agent-secondo); }
+
+.cprx-agent .agent-conto-riga {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-conto-chi {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Un effetto gia' scaduto ma ancora scritto sulla scheda: si vede che e'
+   morto, e si spegne con lo stesso tasto. */
+.cprx-agent .agent-voce.scaduto {
+  opacity: 0.62;
+  box-shadow: inset 3px 0 0 var(--agent-tenue);
+}
+
+/* --- il dock ---------------------------------------------------------- */
+
+/* Quattro tessere fisse sotto lo schermo. Sta sopra la barretta, quindi si
+   lascia lo spazio in fondo: senza, la barretta ci finisce sopra. */
+/* Il dock segue lo schermo: angoli smussati come la scocca, niente reticolo
+   grigio fra le tessere e niente striscia sotto — sono le due cose che lo
+   facevano sembrare un rettangolo appoggiato li'. Lo spazio in fondo serve
+   alla barretta, e ha lo stesso fondo dello schermo. */
+.cprx-agent .agent-dock {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding-bottom: 0.75rem;
+  background: var(--agent-fondo);
+  border-top: 1px solid color-mix(in srgb, var(--agent-linea) 60%, transparent);
+  border-radius: 0 0 1.6rem 1.6rem;
+  flex: 0 0 auto;
+  z-index: 8;
+}
+
+.cprx-agent .agent-scocca button.agent-dock-tessera {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.2rem 0.3rem;
+  border: 0;
+  border-radius: 0.9rem;
+  background: transparent;
+  color: var(--agent-tenue);
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca button.agent-dock-tessera:hover {
+  background: var(--agent-rilievo);
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-scocca button.agent-dock-tessera.attiva { color: var(--agent-accento); }
+
+.cprx-agent .agent-dock-tessera i { font-size: 1rem; }
+
+.cprx-agent .agent-dock-tessera span {
+  font-family: var(--agent-mono);
+  font-size: 0.45rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.cprx-agent .agent-dock-tessera .agent-conta {
+  position: absolute;
+  top: 0.2rem;
+  right: 20%;
+}
+
+/* --- console del master ---------------------------------------------- */
+
+/* La console e' un Agent: stessa scocca, stessa barra di stato, stessa
+   testata di marca. Il padding lo mettono i pezzi, non la scocca, perche'
+   la barra e le linguette arrivano a filo dei bordi. */
+.cprx-agent .agent-console {
+  padding: 0;
+  /* Il rosso del banco. Non e' `--app-tinta`: quella cambia con la
+     linguetta — dentro la banca e' verde — e il segno che dice «questa e'
+     la console» deve restare lo stesso in tutte e otto. */
+  --console-rosso: #ff3b52;
+  box-shadow: inset 0 2px 0 var(--console-rosso);
+}
+
+.cprx-agent .agent-console .agent-stato {
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid var(--agent-linea);
+}
+
+/* «GM» al posto di «NET»: e' il segno che distingue il banco dal telefono
+   di un personaggio, e sta dove sull'Agent c'e' la rete. */
+.cprx-agent .agent-console .agent-rete {
+  color: var(--console-rosso);
+  font-weight: 600;
+}
+
+/* Anche la spia lampeggiante passa al rosso del banco. */
+.cprx-agent .agent-console .agent-spia { background: var(--console-rosso); }
+
+.cprx-agent .agent-console .agent-os {
+  font-family: var(--agent-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  color: var(--agent-tenue);
+}
+
+/* La testata della console sta fuori da `.agent-schermo`, quindi le regole
+   dell'insegna (che partono da `.agent-schermo > .agent-testata`) qui non
+   arrivano: se le rifa' da sola, senza i margini negativi che li' servono
+   ad annullare il padding dello schermo. */
+.cprx-agent .agent-console-testata {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 0.6rem 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--agent-linea);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--app-tinta) 12%, transparent), transparent);
+}
+
+.cprx-agent .agent-console-testata::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--app-tinta);
+}
+
+.cprx-agent .agent-console-testata::after {
+  content: var(--app-marchio);
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.1rem;
+  font-family: var(--agent-mono);
+  font-size: 0.42rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--app-tinta);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.cprx-agent .agent-schede {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--agent-linea);
+  border-bottom: 1px solid var(--agent-linea);
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-scocca button.agent-scheda-tasto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.55rem 0.2rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--agent-fondo);
+  color: var(--agent-tenue);
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca button.agent-scheda-tasto:hover {
+  background: var(--agent-rilievo);
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-scocca button.agent-scheda-tasto.attiva {
+  background: var(--agent-rilievo);
+  color: var(--agent-accento);
+  box-shadow: inset 0 -2px 0 var(--agent-accento);
+}
+
+.cprx-agent .agent-scheda-tasto i { font-size: 0.9rem; }
+
+.cprx-agent .agent-scheda-tasto span {
+  font-family: var(--agent-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.cprx-agent .agent-gps { color: var(--agent-accento); flex: 0 0 auto; }
+
+/* =====================================================================
+   Identita' delle App
+
+   Su un telefono vero le App di sistema seguono il tema, quelle di terze
+   parti no: hanno un marchio, e il marchio non cambia perche' tu hai messo
+   il telefono in scuro. Qui vale la stessa regola.
+
+   Ogni App ha il suo colore, e sono quelli del progetto Claude Design: le
+   App di sistema comprese, perche' anche su un telefono vero Telefono e'
+   verde e Messaggi e' azzurro a prescindere dal tema. L'accento del tema
+   resta per quello che App non e' — home, vetro di blocco, chiamata.
+
+   La chiave sta sulla scocca (`app-<chiave>`): tutto quello che sta sotto
+   eredita, quindi bastano le variabili — non c'e' una regola per ogni
+   elemento di ogni App.
+   ===================================================================== */
+
+.cprx-agent .agent-scocca {
+  /* Di serie l'App non ha marchio: usa l'accento del tema. */
+  --app-tinta: var(--agent-accento);
+  --app-su-tinta: var(--agent-su-accento);
+  --app-marchio: "";
+}
+
+/* Le App di marca ridefiniscono l'accento per tutto il loro schermo: bottoni,
+   icone, bordi e cifre seguono senza altre regole. */
+.cprx-agent .agent-scocca.app-banca,
+.cprx-agent .agent-scocca.app-ncpd,
+.cprx-agent .agent-scocca.app-medscan,
+.cprx-agent .agent-scocca.app-gladiator,
+.cprx-agent .agent-scocca.app-fortify,
+.cprx-agent .agent-scocca.app-ziggurat,
+.cprx-agent .agent-scocca.app-negozio,
+.cprx-agent .agent-scocca.app-appstore,
+.cprx-agent .agent-scocca.app-reputazione,
+.cprx-agent .agent-scocca.app-console,
+.cprx-agent .agent-scocca.app-casa,
+.cprx-agent .agent-scocca.app-sentinel,
+.cprx-agent .agent-scocca.app-patchpro,
+.cprx-agent .agent-scocca.app-alex,
+.cprx-agent .agent-scocca.app-zpost,
+.cprx-agent .agent-scocca.app-garden,
+.cprx-agent .agent-scocca.app-bangme,
+.cprx-agent .agent-scocca.app-hustool,
+.cprx-agent .agent-scocca.app-roachrace,
+.cprx-agent .agent-scocca.app-watchbox,
+.cprx-agent .agent-scocca.app-brainwasher,
+.cprx-agent .agent-scocca.app-elflines,
+.cprx-agent .agent-scocca.app-bigiaaa,
+.cprx-agent .agent-scocca.app-messaggi,
+.cprx-agent .agent-scocca.app-telefono,
+.cprx-agent .agent-scocca.app-lavori,
+.cprx-agent .agent-scocca.app-note,
+.cprx-agent .agent-scocca.app-impostazioni,
+.cprx-agent .agent-scocca.app-corp,
+.cprx-agent .agent-scocca.app-calendario,
+.cprx-agent .agent-icona.app-bigiaaa,
+.cprx-agent .agent-voce.app-bigiaaa {
+  --agent-accento: var(--app-tinta);
+  --agent-su-accento: var(--app-su-tinta);
+}
+
+/* Il banco del master. Rosso segnale: sul telefono di un personaggio quel
+   colore non c'e', quindi basta un'occhiata per sapere quale delle due
+   finestre si ha davanti. */
+.cprx-agent .agent-scocca.app-console,
+.cprx-agent .agent-icona.app-console,
+.cprx-agent .agent-voce.app-console {
+  --app-tinta: #ff3b52;
+  --app-su-tinta: #160407;
+  --app-marchio: "NIGHT CITY CONTROL · GM";
+}
+
+.cprx-agent .agent-scocca.app-banca,
+.cprx-agent .agent-icona.app-banca,
+.cprx-agent .agent-voce.app-banca {
+  --app-tinta: #d9f43a;
+  --app-su-tinta: #12140a;
+  --app-marchio: "NIGHT CITY TRUST";
+}
+
+/* Le cinque App di sistema. Nel progetto Design hanno un colore anche loro,
+   e non e' un vezzo: su un telefono il verde e' la cornetta, l'azzurro sono
+   i messaggi, e quel colore non cambia col tema. */
+.cprx-agent .agent-scocca.app-telefono,
+.cprx-agent .agent-icona.app-telefono,
+.cprx-agent .agent-voce.app-telefono {
+  --app-tinta: #5ef2a0;
+  --app-su-tinta: #041209;
+  --app-marchio: "LINEA VOCALE";
+}
+
+.cprx-agent .agent-scocca.app-messaggi,
+.cprx-agent .agent-icona.app-messaggi,
+.cprx-agent .agent-voce.app-messaggi {
+  --app-tinta: #35d0e0;
+  --app-su-tinta: #041215;
+  --app-marchio: "CANALE CIFRATO";
+}
+
+.cprx-agent .agent-scocca.app-lavori,
+.cprx-agent .agent-icona.app-lavori,
+.cprx-agent .agent-voce.app-lavori {
+  --app-tinta: #ffc93a;
+  --app-su-tinta: #150f02;
+  --app-marchio: "GIG BOARD";
+}
+
+.cprx-agent .agent-scocca.app-note,
+.cprx-agent .agent-icona.app-note,
+.cprx-agent .agent-voce.app-note {
+  --app-tinta: #e0e6f0;
+  --app-su-tinta: #0a0d12;
+  --app-marchio: "ARCHIVIO LOCALE";
+}
+
+.cprx-agent .agent-scocca.app-impostazioni,
+.cprx-agent .agent-icona.app-impostazioni,
+.cprx-agent .agent-voce.app-impostazioni {
+  --app-tinta: #c9d1de;
+  --app-su-tinta: #0a0d12;
+  --app-marchio: "CONFIGURAZIONE DISPOSITIVO";
+}
+
+.cprx-agent .agent-scocca.app-contatti,
+.cprx-agent .agent-icona.app-contatti,
+.cprx-agent .agent-voce.app-contatti {
+  --app-tinta: #5ef2a0;
+  --app-su-tinta: #041209;
+  --app-marchio: "RUBRICA";
+}
+
+.cprx-agent .agent-scocca.app-ncpd,
+.cprx-agent .agent-icona.app-ncpd,
+.cprx-agent .agent-voce.app-ncpd {
+  --app-tinta: #2e8bff;
+  --app-su-tinta: #050b18;
+  --app-marchio: "NCPD · RECORDS DIVISION";
+}
+
+.cprx-agent .agent-scocca.app-medscan,
+.cprx-agent .agent-icona.app-medscan,
+.cprx-agent .agent-voce.app-medscan {
+  --app-tinta: #ff2e6e;
+  --app-su-tinta: #16040b;
+  --app-marchio: "TRAUMA TEAM · TRIAGE";
+}
+
+.cprx-agent .agent-scocca.app-gladiator,
+.cprx-agent .agent-icona.app-gladiator,
+.cprx-agent .agent-voce.app-gladiator {
+  --app-tinta: #ff7a1a;
+  --app-su-tinta: #140a02;
+  --app-marchio: "SEGOTARI ARENA";
+}
+
+.cprx-agent .agent-scocca.app-fortify,
+.cprx-agent .agent-icona.app-fortify,
+.cprx-agent .agent-voce.app-fortify {
+  --app-tinta: #4ad9b5;
+  --app-su-tinta: #04120e;
+  --app-marchio: "SECSYSTEMS 4TIFY";
+}
+
+.cprx-agent .agent-scocca.app-ziggurat,
+.cprx-agent .agent-icona.app-ziggurat,
+.cprx-agent .agent-voce.app-ziggurat {
+  --app-tinta: #8fa8c8;
+  --app-su-tinta: #04101f;
+  --app-marchio: "ZIGGURAT · CITY GRID";
+}
+
+.cprx-agent .agent-scocca.app-negozio,
+.cprx-agent .agent-icona.app-negozio,
+.cprx-agent .agent-voce.app-negozio {
+  --app-tinta: #e04ba0;
+  --app-su-tinta: #16040e;
+  --app-marchio: "STREETWARE";
+}
+
+.cprx-agent .agent-scocca.app-casa,
+.cprx-agent .agent-icona.app-casa,
+.cprx-agent .agent-voce.app-casa {
+  --app-tinta: #8ec5ff;
+  --app-su-tinta: #05101c;
+  --app-marchio: "ALLOGGIO E SPESE";
+}
+
+.cprx-agent .agent-scocca.app-appstore,
+.cprx-agent .agent-icona.app-appstore,
+.cprx-agent .agent-voce.app-appstore {
+  --app-tinta: #9b6cff;
+  --app-su-tinta: #0d0518;
+  --app-marchio: "BLACK CHROME";
+}
+
+.cprx-agent .agent-scocca.app-reputazione,
+.cprx-agent .agent-icona.app-reputazione,
+.cprx-agent .agent-voce.app-reputazione {
+  --app-tinta: #ff4f9a;
+  --app-su-tinta: #17040c;
+  --app-marchio: "NIGHT CITY WIRE";
+}
+
+/* --- forme che servono solo alle App del DLC -------------------------- */
+
+/* Una terza riga dentro una voce d'elenco: l'anteprima di un'email, il
+   testo di una voce del Database Urbano. Va a capo, a differenza delle
+   altre due — e' un testo, non un'etichetta. */
+.cprx-agent .agent-voce-corpo {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--agent-tenue);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Il corpo di un'email aperta: qui il testo si legge tutto. */
+.cprx-agent .agent-lettera {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0.85rem;
+  border-radius: var(--agent-raggio);
+  background: var(--agent-pannello);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Garden: i post non sono un elenco, sono schede staccate — una bacheca
+   con sei righe attaccate non si legge. */
+.cprx-agent .agent-patch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cprx-agent .agent-post {
+  padding: 0.75rem 0.8rem;
+  border-radius: var(--agent-raggio);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-post > header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cprx-agent .agent-post-chi {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cprx-agent .agent-post-testo {
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.cprx-agent .agent-post > footer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.cprx-agent .agent-scocca button.agent-post-cuore {
+  flex: 0 0 auto;
+  width: auto;
+  padding: 0.25rem 0.7rem;
+  border: 0;
+  border-radius: var(--agent-pillola);
+  background: var(--agent-rilievo);
+  color: var(--agent-tenue);
+  font-family: var(--agent-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+}
+
+.cprx-agent .agent-scocca button.agent-post-cuore.acceso,
+.cprx-agent .agent-scocca button.agent-post-cuore:hover {
+  background: color-mix(in srgb, var(--agent-allarme) 14%, transparent);
+  color: var(--agent-allarme);
+}
+
+/* --- banca: la carta, il flusso, le giornate -------------------------- */
+
+.cprx-agent .agent-carta-alto {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.cprx-agent .agent-carta-marca {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* Il chip. E' decorazione dichiarata, e sta qui e non nel template perche'
+   il template non deve sapere che questa scheda finge di essere una carta. */
+.cprx-agent .agent-carta-chip {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 22px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, #c9b84a, #7a6f28);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.cprx-agent .agent-carta-chip::after {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45), 0 -4px 0 rgba(0, 0, 0, 0.45);
+}
+
+.cprx-agent .agent-conto-riga-cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.cprx-agent .agent-conto-valuta {
+  font-family: var(--agent-mono);
+  font-size: 0.8rem;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-carta-basso {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.cprx-agent .agent-carta-numero {
+  font-family: var(--agent-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  color: color-mix(in srgb, var(--agent-testo) 80%, var(--agent-fondo));
+}
+
+.cprx-agent .agent-carta-scadenza {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+}
+
+.cprx-agent .agent-carta-data {
+  font-family: var(--agent-mono);
+  font-size: 0.72rem;
+  color: var(--agent-tenue);
+}
+
+/* I quattro tasti sotto la carta. */
+.cprx-agent .agent-conto-tasti {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.cprx-agent .agent-scocca button.agent-conto-tasto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  width: auto;
+  padding: 0.6rem 0.2rem;
+  border: 1px solid var(--agent-linea);
+  border-radius: var(--agent-raggio-piccolo);
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  line-height: normal;
+}
+
+.cprx-agent .agent-conto-tasto i { font-size: 0.9rem; color: var(--app-tinta, var(--agent-accento)); }
+
+.cprx-agent .agent-conto-tasto span {
+  font-family: var(--agent-mono);
+  font-size: 0.45rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.cprx-agent .agent-scocca button.agent-conto-tasto:hover,
+.cprx-agent .agent-scocca button.agent-conto-tasto.attivo {
+  border-color: var(--app-tinta, var(--agent-accento));
+  background: var(--agent-rilievo);
+  color: var(--agent-testo);
+}
+
+/* Il flusso dei sette giorni. */
+.cprx-agent .agent-flusso {
+  flex: 0 0 auto;
+  padding: 0.8rem;
+  border-radius: var(--agent-raggio);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-flusso-alto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.cprx-agent .agent-flusso-netto {
+  font-family: var(--agent-mono);
+  font-size: 0.72rem;
+  color: var(--agent-secondo);
+  font-variant-numeric: tabular-nums;
+}
+
+.cprx-agent .agent-flusso-colonne {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  height: 4.4rem;
+  margin-top: 0.7rem;
+}
+
+.cprx-agent .agent-flusso-colonna {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  height: 100%;
+  text-align: center;
+}
+
+.cprx-agent .agent-flusso-colonna > i { display: block; }
+.cprx-agent .agent-flusso-colonna > i.dentro { background: var(--app-tinta, var(--agent-accento)); opacity: 0.85; }
+.cprx-agent .agent-flusso-colonna > i.fuori { background: var(--agent-allarme); opacity: 0.7; }
+
+.cprx-agent .agent-flusso-legenda {
+  display: flex;
+  gap: 0.9rem;
+  margin-top: 0.6rem;
+  font-family: var(--agent-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-flusso-legenda span { display: flex; align-items: center; gap: 0.3rem; }
+.cprx-agent .agent-flusso-legenda i { width: 8px; height: 8px; display: block; }
+.cprx-agent .agent-flusso-legenda i.dentro { background: var(--app-tinta, var(--agent-accento)); }
+.cprx-agent .agent-flusso-legenda i.fuori { background: var(--agent-allarme); }
+
+/* Una giornata di movimenti: intestazione col totale, poi le righe. */
+.cprx-agent .agent-giornata { flex: 0 0 auto; }
+
+.cprx-agent .agent-giornata-alto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0 0.15rem 0.4rem;
+}
+
+.cprx-agent .agent-giornata-saldo {
+  font-family: var(--agent-mono);
+  font-size: 0.68rem;
+  color: var(--agent-secondo);
+  font-variant-numeric: tabular-nums;
+}
+
+.cprx-agent .agent-giornata-saldo.uscita { color: var(--agent-allarme); }
+
+/* Il quadratino col verso del movimento, a sinistra della riga. */
+.cprx-agent .agent-movimento-segno {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--agent-linea);
+  color: var(--agent-allarme);
+  font-size: 0.7rem;
+}
+
+.cprx-agent .agent-movimento.entrata .agent-movimento-segno { color: var(--agent-secondo); }
+
+/* --- incarichi: una scheda per lavoro --------------------------------- */
+
+/* Non un elenco: quattro righe per voce attaccate una all'altra sarebbero
+   un muro. Qui le schede sono staccate, e lo stato tinge tutto — la parola
+   a destra, il filo dell'avanzamento. */
+.cprx-agent .agent-gig {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cprx-agent .agent-gig-scheda {
+  position: relative;
+  padding: 0.85rem;
+  border-radius: var(--agent-raggio);
+  background: var(--agent-pannello);
+  transition: background 150ms ease;
+}
+
+.cprx-agent .agent-gig-scheda:hover { background: var(--agent-rilievo); }
+
+.cprx-agent .agent-gig-scheda > header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cprx-agent .agent-gig-chi {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.cprx-agent .agent-gig-titolo {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.cprx-agent .agent-gig-stato {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gig-tinta, var(--agent-tenue));
+}
+
+.cprx-agent .agent-gig-testo {
+  margin: 0.6rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-gig-scheda > footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.7rem;
+}
+
+.cprx-agent .agent-gig-scheda > footer .agent-progresso { flex: 1; height: 3px; }
+.cprx-agent .agent-gig-scheda > footer .agent-progresso > i { background: var(--gig-tinta, var(--agent-accento)); }
+
+.cprx-agent .agent-gig-paga {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.85rem;
+  color: var(--agent-accento);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lo stato e' un colore solo, e tinge sia la parola sia l'avanzamento. */
+.cprx-agent .agent-gig-scheda.stato-proposto { --gig-tinta: var(--agent-accento); }
+.cprx-agent .agent-gig-scheda.stato-corso    { --gig-tinta: var(--agent-secondo); }
+.cprx-agent .agent-gig-scheda.stato-concluso { --gig-tinta: var(--agent-ok); }
+.cprx-agent .agent-gig-scheda.stato-fallito  { --gig-tinta: var(--agent-allarme); }
+
+/* I tasti compaiono col dito sopra: su una scheda che si legge, due icone
+   sempre accese rubano l'occhio al titolo. */
+.cprx-agent .agent-gig-azioni {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.cprx-agent .agent-gig-scheda:hover .agent-gig-azioni,
+.cprx-agent .agent-gig-scheda:focus-within .agent-gig-azioni { opacity: 1; }
+
+/* I tasti sono in posizione assoluta, quindi non spostano niente quando
+   compaiono: la riga in fondo deve tenersi il loro posto da sola, o col dito
+   sopra la paga finisce sotto le due icone. */
+.cprx-agent .agent-gig-scheda > footer { padding-right: 4.3rem; }
+
+/* Stessa ragione sulla scheda di una nota, dove sotto al testo non c'e' una
+   riga da rientrare: i tasti stanno sopra le ultime parole. */
+.cprx-agent .agent-nota-testo { padding-right: 4.3rem; }
+
+/* --- App Store: una riga per App -------------------------------------- */
+
+/* La mattonella colorata a sinistra: stessa forma della griglia della home,
+   e la tinta arriva da `app-<chiave>` sulla riga — un colore, un posto. */
+.cprx-agent .agent-store-icona {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 26%;
+  background: color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 14%, transparent);
+  color: var(--app-tinta, var(--agent-accento));
+  font-size: 1rem;
+}
+
+.cprx-agent .agent-scocca button.agent-store-tasto {
+  align-self: center;
+  font-size: 0.55rem;
+}
+
+.cprx-agent .agent-scocca button.agent-store-tasto[disabled] { opacity: 0.35; }
+
+/* --- note: schede, non righe ----------------------------------------- */
+
+.cprx-agent .agent-note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cprx-agent .agent-nota-scheda {
+  position: relative;
+  padding: 0.85rem;
+  border-radius: var(--agent-raggio);
+  background: var(--agent-pannello);
+  transition: background 150ms ease;
+}
+
+.cprx-agent .agent-nota-scheda:hover { background: var(--agent-rilievo); }
+
+.cprx-agent .agent-nota-scheda > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.cprx-agent .agent-nota-titolo {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Tre righe e poi si taglia: chi vuole il resto apre la nota. */
+.cprx-agent .agent-nota-testo {
+  margin: 0.45rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--agent-tenue);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Sette colonne dentro la scheda d'apertura: quanto hai pubblicato nella
+   settimana. La colonna piu' alta fa da scala, quindi la percentuale la
+   calcola il contesto — qui c'e' solo la forma. */
+.cprx-agent .agent-istogramma {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.3rem;
+  width: 100%;
+  height: 3.4rem;
+  margin-top: 0.7rem;
+}
+
+.cprx-agent .agent-istogramma-colonna {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  height: 100%;
+  text-align: center;
+}
+
+.cprx-agent .agent-istogramma-colonna > i {
+  display: block;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  background: var(--app-tinta, var(--agent-accento));
+  opacity: 0.8;
+}
+
+/* La scheda d'apertura centrata: BangMe!, Roach Race, Big IAAA aprono su
+   una cifra sola, e una cifra sola sta in mezzo. */
+.cprx-agent .agent-eroe-centro {
+  align-items: center;
+  text-align: center;
+}
+
+.cprx-agent .agent-eroe-centro .agent-conto-cifra { font-size: 2.2rem; }
+
+/* Tre colonne invece di due: le sei STAT dell'elfo. */
+.cprx-agent .agent-quadretti-tre { grid-template-columns: repeat(3, 1fr); }
+
+/* La riga scelta di un elenco — un destinatario, il proprio nome in
+   classifica: si tinge, non si riempie, come una pillola accesa. */
+.cprx-agent .agent-voce.scelto {
+  background: color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 10%, transparent);
+}
+
+.cprx-agent .agent-scelto-spia {
+  flex: 0 0 auto;
+  color: var(--app-tinta, var(--agent-accento));
+}
+
+/* --- le App del DLC «Tutto sugli Agent» ------------------------------- */
+/* Le tinte vengono dal progetto di design, i marchi dai produttori del    */
+/* manuale: tre sono della Ziggurat, tre della No/Brainer, e si vede.      */
+
+.cprx-agent .agent-scocca.app-alex,
+.cprx-agent .agent-icona.app-alex,
+.cprx-agent .agent-voce.app-alex {
+  --app-tinta: #5ad1ff;
+  --app-su-tinta: #041018;
+  --app-marchio: "ZIGGURAT · NETCRAWLER";
+}
+
+.cprx-agent .agent-scocca.app-zpost,
+.cprx-agent .agent-icona.app-zpost,
+.cprx-agent .agent-voce.app-zpost {
+  --app-tinta: #c98cff;
+  --app-su-tinta: #0f0618;
+  --app-marchio: "ZIGGURAT · POSTA";
+}
+
+.cprx-agent .agent-scocca.app-garden,
+.cprx-agent .agent-icona.app-garden,
+.cprx-agent .agent-voce.app-garden {
+  --app-tinta: #6ee7a8;
+  --app-su-tinta: #04150c;
+  --app-marchio: "ZIGGURAT · DATA POOL";
+}
+
+.cprx-agent .agent-scocca.app-bangme,
+.cprx-agent .agent-icona.app-bangme,
+.cprx-agent .agent-voce.app-bangme {
+  --app-tinta: #ffb02e;
+  --app-su-tinta: #180f02;
+  --app-marchio: "EUROBANK · TRASFERIMENTI";
+}
+
+.cprx-agent .agent-scocca.app-hustool,
+.cprx-agent .agent-icona.app-hustool,
+.cprx-agent .agent-voce.app-hustool {
+  --app-tinta: #ff8a3d;
+  --app-su-tinta: #180a03;
+  --app-marchio: "NO/BRAINER · LAVORETTI";
+}
+
+.cprx-agent .agent-scocca.app-roachrace,
+.cprx-agent .agent-icona.app-roachrace,
+.cprx-agent .agent-voce.app-roachrace {
+  --app-tinta: #ff5f9e;
+  --app-su-tinta: #180510;
+  --app-marchio: "CDPS · GIOCO";
+}
+
+.cprx-agent .agent-scocca.app-watchbox,
+.cprx-agent .agent-icona.app-watchbox,
+.cprx-agent .agent-voce.app-watchbox {
+  --app-tinta: #4ad9b5;
+  --app-su-tinta: #04150f;
+  --app-marchio: "NO/BRAINER · SORVEGLIANZA";
+}
+
+.cprx-agent .agent-scocca.app-brainwasher,
+.cprx-agent .agent-icona.app-brainwasher,
+.cprx-agent .agent-voce.app-brainwasher {
+  --app-tinta: #a0b6ff;
+  --app-su-tinta: #05091a;
+  --app-marchio: "NO/BRAINER · TERAPIA";
+}
+
+.cprx-agent .agent-scocca.app-elflines,
+.cprx-agent .agent-icona.app-elflines,
+.cprx-agent .agent-voce.app-elflines {
+  --app-tinta: #8ef0d0;
+  --app-su-tinta: #04160f;
+  --app-marchio: "SEGOTARI · ACCOUNT";
+}
+
+.cprx-agent .agent-scocca.app-bigiaaa,
+.cprx-agent .agent-icona.app-bigiaaa,
+.cprx-agent .agent-voce.app-bigiaaa {
+  --app-tinta: #ffe45e;
+  --app-su-tinta: #161303;
+  --app-marchio: "ZIGGURAT · POTENZIAMENTO";
+}
+
+.cprx-agent .agent-scocca.app-sentinel,
+.cprx-agent .agent-icona.app-sentinel,
+.cprx-agent .agent-voce.app-sentinel {
+  --app-tinta: #9b6cff;
+  --app-su-tinta: #0b0518;
+  --app-marchio: "NETWATCH · DIFESA DI RETE";
+}
+
+.cprx-agent .agent-scocca.app-patchpro,
+.cprx-agent .agent-icona.app-patchpro,
+.cprx-agent .agent-voce.app-patchpro {
+  --app-tinta: #6ee7a8;
+  --app-su-tinta: #04150c;
+  --app-marchio: "ZIGGURAT · STUDIO CREATORI";
+}
+
+/* Calendario. Non e' un'App di Black Chrome — e' una meccanica del modulo,
+   come Casa — ma nel prototipo ha una tinta sua, e sulla griglia stava
+   accanto a undici icone colorate come un buco grigio. */
+.cprx-agent .agent-scocca.app-calendario,
+.cprx-agent .agent-icona.app-calendario,
+.cprx-agent .agent-voce.app-calendario {
+  --app-tinta: #ff6b6b;
+  --app-su-tinta: #1a0505;
+  --app-marchio: "AGENDA E SCADENZE";
+}
+
+/* Corp Link. La tinta di serie e' il rosso corporativo del prototipo, ma
+   e' l'unica App che se la fa cambiare da un dato: il badge porta il colore
+   della Corporazione per cui lavori, e lo passa con `--corp-tinta`. */
+.cprx-agent .agent-scocca.app-corp,
+.cprx-agent .agent-icona.app-corp,
+.cprx-agent .agent-voce.app-corp {
+  --app-tinta: #e03b3b;
+  --app-su-tinta: #190405;
+  --app-marchio: "PORTALE DIPENDENTI";
+}
+
+/* --- la testata diventa l'insegna dell'App ---------------------------- */
+
+/* L'insegna arriva a filo dei bordi: i margini negativi annullano il
+   padding di `.agent-schermo` (1.15rem in alto, 0.75rem ai lati). */
+.cprx-agent .agent-schermo > .agent-testata {
+  position: relative;
+  flex: 0 0 auto;
+  margin: -1.15rem -0.75rem 0;
+  padding: 0.7rem 0.75rem 0.55rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--app-tinta) 28%, transparent);
+  background: linear-gradient(120deg,
+    color-mix(in srgb, var(--app-tinta) 13%, transparent), transparent 60%);
+}
+
+/* La spia di marca. Prima qui c'era un filo lungo tutto il bordo alto:
+   sotto la tacca del telefono era una seconda riga orizzontale a due
+   millimetri dalla barra di stato, e il progetto di design al suo posto
+   mette un punto acceso in fondo a destra. Sta in basso e non a meta'
+   altezza: a meta' altezza finirebbe sotto i tasti che diverse testate
+   hanno a destra. */
+.cprx-agent .agent-schermo > .agent-testata::before {
+  content: "";
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.35rem;
+  width: 6px;
+  height: 6px;
+  background: var(--app-tinta);
+  box-shadow: 0 0 12px var(--app-tinta);
+  pointer-events: none;
+}
+
+/* Il marchio sotto il titolo: sta nel contenuto generato, quindi non tocca
+   il template e non finisce nella resa di chi non ha marchio. Parte dopo
+   il tasto indietro, cosi' sta sotto il titolo e non sotto la freccia. */
+.cprx-agent .agent-schermo > .agent-testata::after {
+  content: var(--app-marchio);
+  position: absolute;
+  left: 3.4rem;
+  bottom: 0.12rem;
+  font-family: var(--agent-mono);
+  font-size: 0.42rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--app-tinta);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.cprx-agent .agent-schermo > .agent-testata h3 { padding-bottom: 0.45rem; }
+
+/* Il tasto indietro e' un quadrato con la tinta dell'App, come nel
+   progetto: e' l'unico comando della testata che si preme sempre. */
+.cprx-agent .agent-schermo > .agent-testata .agent-indietro {
+  border-color: var(--agent-linea);
+  color: var(--app-tinta, var(--agent-accento));
+}
+
+/* --- Banca: un estratto conto, non un elenco ------------------------- */
+
+/* La Banca apre con una carta di credito, non con un riquadro: due anelli
+   di luce nell'angolo alto, la cifra grande, il numero sotto. Gli anelli
+   sono decorazione e stanno nel contenuto generato — il template non sa
+   niente di tutto questo. */
+.cprx-agent .agent-scocca.app-banca .agent-conto {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--agent-raggio);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--app-tinta) 20%, transparent), transparent 55%),
+    var(--agent-pannello);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--app-tinta) 30%, transparent);
+  padding: 1.1rem 0.95rem;
+}
+
+.cprx-agent .agent-scocca.app-banca .agent-conto::before,
+.cprx-agent .agent-scocca.app-banca .agent-conto::after {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border: 1px solid color-mix(in srgb, var(--app-tinta) 10%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.cprx-agent .agent-scocca.app-banca .agent-conto::before { right: -70px; top: -60px; }
+.cprx-agent .agent-scocca.app-banca .agent-conto::after  { right: -40px; top: -110px; }
+
+.cprx-agent .agent-scocca.app-banca .agent-conto > * { position: relative; }
+
+/* Il corpo era tarato su quattro cifre: un conto da un milione sbordava
+   dalla carta, che ha `overflow: hidden` e lo tagliava di netto. */
+.cprx-agent .agent-scocca.app-banca .agent-conto-cifra {
+  font-size: 2.1rem;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+/* Righe di registro dentro la scheda: nessuna zebratura, il filo fra due
+   righe basta. Le cifre restano tabellari — una colonna di importi che non
+   si incolonna non e' un estratto conto. */
+.cprx-agent .agent-scocca.app-banca .agent-movimento {
+  border: 0;
+  border-bottom: 1px solid var(--agent-separatore);
+  background: transparent;
+  padding: 0.65rem 0.7rem;
+}
+
+.cprx-agent .agent-scocca.app-banca .agent-movimento:last-child { border-bottom: 0; }
+
+.cprx-agent .agent-scocca.app-banca .agent-movimento-cifra {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- NCPD: un terminale di polizia ----------------------------------- */
+
+.cprx-agent .agent-scocca.app-ncpd .agent-schermo,
+.cprx-agent .agent-scocca.app-ncpd .agent-elenco { font-family: var(--agent-mono); }
+
+.cprx-agent .agent-scocca.app-ncpd .agent-voce { box-shadow: inset 3px 0 0 var(--app-tinta); }
+
+.cprx-agent .agent-scocca.app-ncpd .agent-voce-titolo {
+  font-family: var(--agent-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cprx-agent .agent-scocca.app-ncpd .agent-fascicolo {
+  border: 1px solid color-mix(in srgb, var(--app-tinta) 45%, transparent);
+  border-left: 3px solid var(--app-tinta);
+  background:
+    repeating-linear-gradient(135deg,
+      color-mix(in srgb, var(--app-tinta) 4%, transparent) 0 6px, transparent 6px 12px),
+    var(--agent-pannello);
+  padding: 0.8rem;
+}
+
+.cprx-agent .agent-scocca.app-ncpd .agent-fascicolo-nome {
+  font-family: var(--agent-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* --- MedScan: una cartella clinica ----------------------------------- */
+
+.cprx-agent .agent-scocca.app-medscan .agent-schermo > .agent-testata {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--app-tinta) 18%, transparent), transparent);
+}
+
+.cprx-agent .agent-scocca.app-medscan .agent-voce { box-shadow: inset 3px 0 0 var(--app-tinta); }
+
+.cprx-agent .agent-scocca.app-medscan .agent-quadretto {
+  border-left: 3px solid var(--app-tinta);
+  background: var(--agent-pannello);
+}
+
+/* --- Digital Gladiator: un'arena ------------------------------------- */
+
+.cprx-agent .agent-scocca.app-gladiator .agent-schermo {
+  background:
+    radial-gradient(120% 60% at 50% 0%,
+      color-mix(in srgb, var(--app-tinta) 12%, transparent), transparent 70%);
+}
+
+.cprx-agent .agent-scocca.app-gladiator .agent-sfida {
+  border: 1px solid color-mix(in srgb, var(--app-tinta) 50%, transparent);
+  background: var(--agent-pannello);
+  box-shadow: 0 0 40px -14px var(--app-tinta);
+  padding: 1rem;
+}
+
+.cprx-agent .agent-scocca.app-gladiator .agent-chiamata-nome {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* --- 4Tify: strumento tattico ---------------------------------------- */
+
+.cprx-agent .agent-scocca.app-fortify .agent-schermo {
+  background:
+    repeating-linear-gradient(0deg,
+      color-mix(in srgb, var(--app-tinta) 5%, transparent) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg,
+      color-mix(in srgb, var(--app-tinta) 5%, transparent) 0 1px, transparent 1px 22px);
+}
+
+/* --- Ziggurat: una mappa --------------------------------------------- */
+
+.cprx-agent .agent-scocca.app-ziggurat .agent-schermo {
+  background:
+    linear-gradient(180deg, transparent 60%,
+      color-mix(in srgb, var(--app-tinta) 8%, transparent));
+}
+
+/* --- Negozio e App Store: vetrine ------------------------------------ */
+
+.cprx-agent .agent-scocca.app-negozio .agent-articolo,
+.cprx-agent .agent-scocca.app-appstore .agent-scheda-app {
+  border-radius: 0;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--app-tinta) 8%, transparent), transparent 60%),
+    var(--agent-pannello);
+}
+
+.cprx-agent .agent-scocca.app-appstore .agent-scheda-icona {
+  border: 1px solid color-mix(in srgb, var(--app-tinta) 45%, transparent);
+  background: color-mix(in srgb, var(--app-tinta) 10%, transparent);
+}
+
+.cprx-agent .agent-scocca.app-appstore .agent-scheda-app.posseduta {
+  box-shadow: inset 3px 0 0 var(--app-tinta);
+}
+
+/* --- MedScan: un listino di prestazioni ------------------------------ */
+
+.cprx-agent .agent-abbonato {
+  border: 1px solid color-mix(in srgb, var(--app-tinta) 45%, transparent);
+  border-left: 3px solid var(--app-tinta);
+  background: color-mix(in srgb, var(--app-tinta) 8%, transparent);
+  padding: 0.5rem 0.6rem;
+}
+
+.cprx-agent .agent-abbonato i { color: var(--app-tinta); }
+
+.cprx-agent .agent-consulto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.8rem;
+  border: 1px solid var(--agent-linea);
+  border-left: 3px solid var(--app-tinta);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-consulto-alto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-consulto-tempo {
+  font-family: var(--agent-mono);
+  font-size: 0.85rem;
+  color: var(--app-tinta);
+}
+
+.cprx-agent .agent-consulto-nome { font-size: 1.05rem; font-weight: 600; }
+
+.cprx-agent .agent-consulto-bonus {
+  font-family: var(--agent-mono);
+  font-size: 1.6rem;
+  line-height: 1.1;
+  color: var(--app-tinta);
+}
+
+.cprx-agent .agent-consulto-usi {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--agent-tenue);
+  line-height: 1.35;
+}
+
+.cprx-agent .agent-listino {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-listino-voce {
+  padding: 0.7rem;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-listino-testa,
+.cprx-agent .agent-listino-piede {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-listino-piede { margin-top: 0.5rem; }
+.cprx-agent .agent-listino-nome { font-size: 0.95rem; font-weight: 600; }
+
+.cprx-agent .agent-listino-prezzo {
+  font-family: var(--agent-mono);
+  font-size: 0.9rem;
+  color: var(--app-tinta);
+}
+
+.cprx-agent .agent-listino-usi {
+  margin: 0.3rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--agent-tenue);
+}
+
+/* --- Ziggurat: schede dello sportello -------------------------------- */
+
+.cprx-agent .agent-voce-zig {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem;
+  border: 1px solid var(--agent-linea);
+  border-left: 3px solid var(--app-tinta);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-zig-alto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-zig-testo {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--agent-tenue);
+}
+
+/* --- Digital Gladiator: la scheda del gladiatore --------------------- */
+
+.cprx-agent .agent-gladiatore {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--app-tinta) 45%, transparent);
+  background:
+    linear-gradient(105deg, color-mix(in srgb, var(--app-tinta) 14%, transparent), transparent 60%),
+    var(--agent-pannello);
+}
+
+.cprx-agent .agent-gladiatore-ritratto {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border: 1px solid var(--app-tinta);
+  border-radius: 0;
+}
+
+.cprx-agent .agent-gladiatore-testo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cprx-agent .agent-gladiatore-nome {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-gladiatore-stat {
+  display: flex;
+  gap: 0.7rem;
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-gladiatore-stat b { color: var(--app-tinta); font-size: 0.8rem; }
+
+.cprx-agent .agent-arena-bilancio {
+  display: flex;
+  gap: 1px;
+  background: var(--agent-linea);
+}
+
+.cprx-agent .agent-arena-posta {
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--app-tinta);
+}
+
+.cprx-agent .agent-arena-avviso {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--agent-allarme);
+}
+
+.cprx-agent .agent-sfida.mortale {
+  border-color: var(--agent-allarme);
+  box-shadow: 0 0 40px -14px var(--agent-allarme);
+}
+
+.cprx-agent .agent-arena-riga {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  border-bottom: 1px solid var(--agent-linea);
+  background: transparent;
+}
+
+.cprx-agent .agent-arena-esito {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--agent-allarme);
+}
+
+.cprx-agent .agent-arena-riga.vinta .agent-arena-esito { color: var(--app-tinta); }
+
+/* --- Vetrina: banco e briciola --------------------------------------- */
+
+.cprx-agent .agent-banco {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-scocca button.agent-reparto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 0.7rem;
+  border: 1px solid var(--agent-linea);
+  border-left: 3px solid var(--app-tinta);
+  border-radius: 0;
+  background: var(--agent-pannello);
+  color: var(--agent-testo);
+  text-align: left;
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca button.agent-reparto:hover {
+  background: var(--agent-rilievo);
+  border-color: var(--app-tinta);
+}
+
+.cprx-agent .agent-reparto-nome {
+  font-size: 0.85rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cprx-agent .agent-reparto-conta {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-briciola {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.cprx-agent .agent-scocca button.agent-briciola-su,
+.cprx-agent .agent-scocca button.agent-briciola-filtro {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--agent-linea);
+  border-radius: 0;
+  background: transparent;
+  color: var(--agent-tenue);
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: normal;
+}
+
+.cprx-agent .agent-scocca button.agent-briciola-su:hover,
+.cprx-agent .agent-scocca button.agent-briciola-filtro:hover {
+  color: var(--app-tinta);
+  border-color: var(--app-tinta);
+}
+
+.cprx-agent .agent-briciola-filtro { color: var(--app-tinta); }
+
+.cprx-agent .agent-briciola-qui {
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--agent-testo);
+}
+
+/* --- House ------------------------------------------------------------ */
+
+.cprx-agent .agent-moroso {
+  color: var(--agent-allarme);
+  font-family: var(--agent-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* --- allegato immagine ------------------------------------------------ */
+
+.cprx-agent .agent-allegato {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.4rem;
+  border: 1px solid var(--agent-linea);
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-allegato img {
+  max-width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border: 0;
+  border-radius: 0;
+}
+
+/* L'immagine nella bolla non deve mai sfondare la larghezza del filo. */
+.cprx-agent .agent-bolla-immagine {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border: 1px solid var(--agent-linea);
+  border-radius: 0;
+  margin-bottom: 0.3rem;
+}
+
+/* --- App di sistema: nessun marchio ---------------------------------- */
+
+/* Qui c'era una regola che toglieva la scheda a Contatti, Lavori e Note e
+   le rimetteva come righe nude. Adesso la scheda tonda e' la forma di
+   tutti gli elenchi — regola generica in «elenchi» — e queste tre App non
+   fanno eccezione: quello che le distingue e' non avere un marchio, non
+   avere una forma diversa. */
+
+/* Lo stato di un lavoro si legge dal filo colorato a sinistra. */
+.cprx-agent .app-lavori .agent-voce.stato-corso { box-shadow: inset 3px 0 0 var(--agent-accento); }
+.cprx-agent .app-lavori .agent-voce.stato-concluso { box-shadow: inset 3px 0 0 var(--agent-ok); }
+.cprx-agent .app-lavori .agent-voce.stato-fallito { box-shadow: inset 3px 0 0 var(--agent-allarme); }
+.cprx-agent .app-lavori .agent-voce.stato-proposto { box-shadow: inset 3px 0 0 var(--agent-tenue); }
+
+/* =====================================================================
+   Calendario e tempo morto
+
+   Il Calendario e' un'App di sistema: niente marchio, niente tinta propria,
+   segue il tema come Contatti o Note. Qui c'e' solo la forma — la griglia
+   del mese, che nessun'altra vista ha.
+   ===================================================================== */
+
+.cprx-agent .agent-cal-oggi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0.2rem 0.9rem;
+}
+
+.cprx-agent .agent-cal-oggi-data {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--agent-testo);
+  text-transform: capitalize;
+}
+
+.cprx-agent .agent-cal-oggi-ora {
+  font-size: 2.1rem;
+  font-weight: 300;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-cal-oggi-sett {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-cal-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.cprx-agent .agent-cal-mese {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  color: var(--agent-tenue);
+}
+
+/* Sette colonne uguali. `minmax(0, 1fr)` e non `1fr`: senza il minimo a
+   zero una cella con dentro un numero largo allarga la sua colonna e la
+   griglia smette di essere regolare. */
+.cprx-agent .agent-cal-griglia {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.cprx-agent .agent-cal-iniziale {
+  text-align: center;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--agent-tenue);
+  padding-bottom: 0.2rem;
+}
+
+/* La cella e' un bottone: la regola generica sui bottoni della scocca gli
+   darebbe padding e bordo, quindi qui si azzera tutto e si riparte. */
+.cprx-agent .agent-scocca .agent-cal-cella {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 0;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--agent-pannello);
+  color: var(--agent-testo);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cprx-agent .agent-cal-cella.fuori {
+  background: transparent;
+  color: var(--agent-tenue);
+  opacity: 0.35;
+}
+
+.cprx-agent .agent-scocca .agent-cal-cella.oggi {
+  border-color: var(--agent-accento);
+  color: var(--agent-accento);
+  font-weight: 600;
+}
+
+.cprx-agent .agent-scocca .agent-cal-cella.scelto {
+  background: var(--agent-accento);
+  color: var(--agent-su-accento);
+  border-color: var(--agent-accento);
+}
+
+/* Il punto dice «qui c'e' qualcosa» senza rubare spazio al numero. */
+.cprx-agent .agent-cal-punto {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--agent-accento);
+}
+
+.cprx-agent .agent-cal-cella.scelto .agent-cal-punto { background: var(--agent-su-accento); }
+
+/* Data e ora affiancate: due campi stretti stanno su una riga sola, e
+   `min-width: 0` gli impedisce di sfondare la colonna con la loro larghezza
+   naturale, che per un `input[type=date]` non e' piccola. */
+.cprx-agent .agent-tempo-riga {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.cprx-agent .agent-tempo-riga .agent-campo {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* La data nella console: e' una riga di testo, non una cifra, quindi non
+   puo' tenere il corpo enorme di `.agent-conto-cifra`. */
+.cprx-agent .agent-cal-cifra {
+  font-size: 1.15rem;
+  line-height: 1.3;
+  text-transform: capitalize;
+}
+
+/* --- le scadenze del calendario --------------------------------------- */
+
+/* La data a sinistra, in colonna: e' la prima cosa che si guarda in un
+   elenco di scadenze, non il titolo. */
+.cprx-agent .agent-cal-quando {
+  flex: 0 0 auto;
+  min-width: 3.2rem;
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--agent-accento);
+}
+
+.cprx-agent .agent-cal-scadenza .agent-voce-cifra {
+  color: var(--agent-critico);
+}
+
+/* --- le migliorie del Quartier Generale -------------------------------- */
+
+/* Una miglioria costruita si tinge, non si riempie: e' la stessa regola dei
+   filtri, il pieno resta del `.agent-cta`.
+   La classe e' `costruita` e non `attiva` di proposito: `button.attiva` e'
+   gia' presa dalla regola generica che riempie di accento — su una riga
+   d'elenco larga tutto lo schermo faceva una fascia colorata col titolo
+   dentro, illeggibile. */
+.cprx-agent .agent-scocca button.agent-qg-riga {
+  width: 100%;
+  text-align: left;
+}
+
+.cprx-agent .agent-qg-riga.costruita {
+  box-shadow: inset 3px 0 0 var(--agent-accento);
+}
+
+.cprx-agent .agent-qg-riga.costruita .agent-marchietto {
+  color: var(--agent-accento);
+}
+
+/* --- Corp Link -------------------------------------------------------- */
+
+/* La tessera. E' l'unica scheda del modulo che prende il colore da un dato
+   e non dal foglio di stile: `--corp-tinta` arriva dal template col colore
+   della Corporazione, e di serie ricade sulla tinta dell'App — un badge
+   senza colore sarebbe stato un badge grigio, che non e' un badge. */
+.cprx-agent .agent-corp-badge {
+  --corp-tinta: var(--app-tinta);
+  background: linear-gradient(150deg,
+    color-mix(in srgb, var(--corp-tinta) 26%, transparent),
+    var(--agent-pannello) 70%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--corp-tinta) 40%, transparent);
+}
+
+.cprx-agent .agent-corp-testa {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Il glifo della Corporazione: un carattere, non un'icona. Le aziende del
+   manuale hanno un segno loro, e disegnarne dieci in SVG sarebbe stato
+   dieci volte il lavoro per la stessa riga di testo. */
+.cprx-agent .agent-corp-glifo {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--corp-tinta) 22%, transparent);
+  color: var(--corp-tinta);
+  font-size: 1rem;
+}
+
+.cprx-agent .agent-corp-glifo.grande {
+  width: 2.8rem;
+  height: 2.8rem;
+  font-size: 1.3rem;
+}
+
+.cprx-agent .agent-corp-sospeso {
+  color: var(--agent-critico);
+}
+
+/* Aperto e chiuso si leggono dal filo a sinistra, come lo stato di un
+   lavoro: `box-shadow` e non `border-left`, altrimenti le righe con il
+   filo rientrano e l'elenco sembra storto. */
+.cprx-agent .agent-corp-accesso.aperto {
+  box-shadow: inset 3px 0 0 var(--agent-ok);
+}
+
+.cprx-agent .agent-corp-accesso.chiuso {
+  box-shadow: inset 3px 0 0 var(--agent-critico);
+}
+
+.cprx-agent .agent-corp-accesso.chiuso .agent-voce-titolo,
+.cprx-agent .agent-corp-benefit:not(.attivo) .agent-voce-titolo {
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-corp-benefit.attivo .agent-marchietto {
+  color: var(--agent-ok);
+}
+
+/* --- la scala della reputazione --------------------------------------- */
+
+/* Si legge dal basso, come una tacca di segnale: il gradino dove sei e'
+   acceso, gli altri restano indietro. */
+.cprx-agent .agent-rep-scala {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0.6rem 0;
+}
+
+.cprx-agent .agent-rep-gradino {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  border-left: 3px solid transparent;
+  background: var(--agent-pannello);
+  color: var(--agent-tenue);
+  font-size: 0.78rem;
+}
+
+.cprx-agent .agent-rep-gradino.qui {
+  border-left-color: var(--agent-accento);
+  color: var(--agent-testo);
+  font-weight: 600;
+}
+
+.cprx-agent .agent-rep-soglia {
+  min-width: 2.2rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-rep-gradino.qui .agent-rep-soglia { color: var(--agent-accento); }
+
+/* --- il tempo morto -------------------------------------------------- */
+
+.cprx-agent .agent-dt-voce,
+.cprx-agent .agent-dt-riga {
+  border: 1px solid var(--agent-bordo);
+  border-left: 3px solid var(--agent-accento);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 0.6rem;
+  background: var(--agent-pannello);
+}
+
+.cprx-agent .agent-dt-voce.chiusa { border-left-color: var(--agent-ok); }
+
+.cprx-agent .agent-dt-capo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.cprx-agent .agent-dt-nome {
+  font-weight: 600;
+  color: var(--agent-testo);
+}
+
+.cprx-agent .agent-dt-stato {
+  margin-left: auto;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-dt-nota {
+  margin: 0.4rem 0 0;
+  font-size: 0.78rem;
+  color: var(--agent-tenue);
+  white-space: pre-wrap;
+}
+
+.cprx-agent .agent-dt-esito {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--agent-testo);
+  white-space: pre-wrap;
+}
+
+.cprx-agent .agent-dt-esito span {
+  display: block;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--agent-ok);
+}
+
+/* =====================================================================
+   Accessibilita'
+   ===================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .cprx-agent .agent-icona-piastra,
+  .cprx-agent .agent-voce,
+  .cprx-agent .agent-voce-azioni,
+  .cprx-agent .agent-blocco-azioni,
+  .cprx-agent .agent-pista,
+  .cprx-agent .agent-pallino-pagina span,
+  #cprx-agent-tasto.cprx-tasto { transition: none; }
+
+  .cprx-agent .agent-icona:hover .agent-icona-piastra { transform: none; }
+  .cprx-agent.in-avvio .agent-avvio { display: none; }
+  .cprx-agent.in-avvio .agent-avvio-barra::after { animation: none; }
+
+  /* La spazzata e la spia sono le due cose che si muovono da sole. */
+  .cprx-agent .agent-spazzata { display: none; }
+  .cprx-agent .agent-spia { animation: none; }
+}

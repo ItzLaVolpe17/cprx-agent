@@ -1,0 +1,6 @@
+# Fine riga uguale su tutte le macchine: senza, passando da Windows a un
+# altro sistema il primo commit sembra riscrivere ogni file.
+* text=auto eol=lf
+
+*.jpg binary
+*.png binary
