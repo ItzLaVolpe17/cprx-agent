@@ -30,21 +30,67 @@
   --agent-secondo: #4fb8d4;
   --agent-critico: #e5262c;
 
-  --agent-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", "Consolas", monospace;
-  --agent-titoli: "Roboto Condensed", "Signika", "Arial Narrow", sans-serif;
+  /* Le due famiglie del progetto: il monospaziato per tutto quello che e'
+     etichetta, sigla o cifra, e Rajdhani per il testo che si legge. Le pile
+     di ripiego dietro reggono senza internet. */
+  --agent-mono: "Share Tech Mono", ui-monospace, "SFMono-Regular", "Consolas", monospace;
+  --agent-titoli: "Rajdhani", "Roboto Condensed", "Signika", sans-serif;
 
-  /* La forma. Nel progetto di design la home e' il sistema — contorni
-     netti, spigoli vivi — e dentro le App tutto diventa una scheda tonda
-     con le righe separate da un filo. Le due cose convivono di proposito:
-     e' quello che distingue il guscio dalle applicazioni.
+  /* La forma, e qui il progetto ha cambiato lingua: non piu' schede tonde,
+     ma **pannelli squadrati** con una barra d'accento sul filo sinistro e
+     un capello bianco tutt'intorno. Il tondo resta solo dove e' un cerchio
+     vero — le iniziali di un contatto, una spia.
 
-     Il filo fra due righe non e' `--agent-linea`: dentro una scheda quel
-     contrasto e' troppo, e si vedrebbe un reticolo invece di un elenco. */
-  --agent-raggio: 16px;
-  --agent-raggio-piccolo: 12px;
-  --agent-pillola: 999px;
-  --agent-separatore: color-mix(in srgb, var(--agent-linea) 55%, var(--agent-pannello));
+     Gli spigoli vivi non sono un ripiego: la mattonella e i blocchi
+     d'apertura hanno l'angolo **tagliato** (`--agent-taglio`), che e' il
+     motivo ricorrente del progetto e non si ottiene con un raggio.
+
+     Il filo fra due righe e' **tratteggiato** e prende la tinta dell'App:
+     una linea piena disegnava un reticolo, e in un pannello senza cornice
+     il tratteggio dice «continua» invece di «finisce qui». */
+  --agent-raggio: 0px;
+  --agent-raggio-piccolo: 2px;
+  --agent-pillola: 2px;
+  --agent-taglio: 13px;
+  --agent-separatore: color-mix(in srgb, var(--agent-accento) 18%, transparent);
   --agent-debole: color-mix(in srgb, var(--agent-tenue) 74%, var(--agent-fondo));
+
+  /* Il pannello: un vetro appena piu' scuro dello schermo, non un riquadro
+     pieno. Da solo non si vedrebbe — a farlo leggere sono la barra
+     d'accento a sinistra e il capello bianco, che stanno insieme a lui in
+     `--agent-orlo-pannello`. */
+  --agent-vetro: linear-gradient(180deg,
+    color-mix(in srgb, var(--agent-fondo) 72%, transparent),
+    color-mix(in srgb, var(--agent-fondo) 46%, transparent));
+  --agent-capello: rgba(255, 255, 255, 0.05);
+  --agent-orlo-pannello:
+    inset 2px 0 0 color-mix(in srgb, var(--agent-accento) 50%, transparent),
+    inset 0 0 0 1px var(--agent-capello);
+
+  /* Il fondo dei comandi scarichi — barra di ricerca, tasto lungo: un velo
+     chiaro invece di un riquadro grigio. */
+  --agent-velo: rgba(255, 255, 255, 0.035);
+  --agent-velo-orlo: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+
+/* Il testo dentro il telefono e' Rajdhani; le etichette restano
+   monospaziate una per una. Senza questa riga il contenuto restava nel
+   carattere di Foundry, ed era la differenza che si vedeva di piu' fra il
+   progetto e la resa. */
+.cprx-agent .agent-scocca { font-family: var(--agent-titoli); }
+
+/* **Una variabile che ne contiene un'altra si risolve dove e' dichiarata,
+   non dove la si usa.** `--agent-separatore` e `--agent-orlo-pannello`
+   contengono `var(--agent-accento)`: dichiarate solo sulla radice si
+   congelavano sull'accento del tema, e dentro Messaggi il filo del pannello
+   restava giallo acido invece di diventare ciano. Ridichiararle **sulla
+   scocca** — lo stesso elemento che porta `app-<chiave>` e quindi la tinta
+   dell'App — le fa ricalcolare con il colore giusto. */
+.cprx-agent .agent-scocca {
+  --agent-separatore: color-mix(in srgb, var(--agent-accento) 18%, transparent);
+  --agent-orlo-pannello:
+    inset 2px 0 0 color-mix(in srgb, var(--agent-accento) 50%, transparent),
+    inset 0 0 0 1px var(--agent-capello);
 }
 
 /* --- temi ----------------------------------------------------------- */
@@ -839,14 +885,16 @@
   right: 0.15rem;
   min-width: 15px;
   padding: 0 4px;
-  border-radius: var(--agent-pillola);
-  background: var(--agent-allarme);
-  color: #fff;
+  /* Squadrato come nel progetto: qui la pastiglia tonda era l'ultima cosa
+     rimasta della lingua vecchia. */
+  border-radius: 0;
+  background: var(--agent-critico);
+  color: var(--agent-fondo);
   font-family: var(--agent-mono);
   font-size: 0.55rem;
   line-height: 15px;
   text-align: center;
-  box-shadow: 0 0 13px color-mix(in srgb, var(--agent-allarme) 60%, transparent);
+  box-shadow: 0 0 13px color-mix(in srgb, var(--agent-critico) 60%, transparent);
   z-index: 2;
 }
 
@@ -1007,23 +1055,26 @@
   flex-direction: column;
   gap: 0;
   border-radius: var(--agent-raggio);
-  background: var(--agent-pannello);
+  background: var(--agent-vetro);
+  box-shadow: var(--agent-orlo-pannello);
   overflow: hidden;
 }
 
 .cprx-agent .agent-voce {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.6rem 0.7rem;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
   background: transparent;
-  border-bottom: 1px solid var(--agent-separatore);
+  border-bottom: 1px dashed var(--agent-separatore);
   transition: background 120ms ease;
 }
 
 .cprx-agent .agent-voce:last-child { border-bottom: 0; }
 
-.cprx-agent .agent-voce:hover { background: var(--agent-rilievo); }
+.cprx-agent .agent-voce:hover {
+  background: color-mix(in srgb, var(--agent-accento) 7%, transparent);
+}
 
 /* Lo stato di un lavoro resta un filo colorato a sinistra, ma dentro la
    scheda: un `border-left` vero rientrerebbe il contenuto di tre pixel
@@ -1040,7 +1091,24 @@
   min-width: 0;
 }
 
-.cprx-agent .agent-voce-titolo { font-weight: 600; font-size: 0.86rem; line-height: 1.25; }
+/* Il testo che si legge e' Rajdhani, e va detto qui: una riga d'elenco e'
+   spesso un `<button>`, e la regola generica sui bottoni li porta tutti al
+   monospaziato. Senza questa riga il nome di una conversazione usciva
+   monospaziato mentre nel progetto e' l'unica cosa che non lo e'. */
+.cprx-agent .agent-voce-titolo,
+.cprx-agent .agent-voce-corpo,
+.cprx-agent .agent-riga-nome,
+.cprx-agent .agent-eroe-titolo,
+/* L'anteprima di una conversazione e' testo, non un'etichetta: nel progetto
+   e' l'unica riga di un elenco che non sia monospaziata insieme al nome.
+   Altrove `.agent-voce-sotto` resta mono, perche' altrove e' una sigla. */
+.cprx-agent .agent-filo-coda > .agent-voce-sotto {
+  font-family: var(--agent-titoli);
+}
+
+.cprx-agent .agent-filo-coda > .agent-voce-sotto { font-size: 0.82rem; }
+
+.cprx-agent .agent-voce-titolo { font-weight: 600; font-size: 0.95rem; line-height: 1.25; }
 
 .cprx-agent .agent-voce-sotto {
   font-family: var(--agent-mono);
@@ -1112,13 +1180,14 @@
 .cprx-agent .agent-scocca button.agent-pillola {
   flex: 0 0 auto;
   width: auto;
-  padding: 0.35rem 0.8rem;
+  padding: 0.45rem 1rem;
   border: 0;
   border-radius: var(--agent-pillola);
-  background: var(--agent-pannello);
+  background: var(--agent-velo);
+  box-shadow: var(--agent-velo-orlo);
   color: var(--agent-tenue);
   font-family: var(--agent-mono);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -1135,16 +1204,18 @@
 .cprx-agent .agent-scocca button.agent-pillola.attiva,
 .cprx-agent .agent-scocca button.agent-pillola.attiva:hover {
   background: color-mix(in srgb, var(--agent-accento) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--agent-accento) 45%, transparent);
   color: var(--agent-accento);
 }
 
 .cprx-agent .agent-cerca {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.15rem 0.75rem;
-  border-radius: var(--agent-pillola);
-  background: var(--agent-pannello);
+  gap: 0.6rem;
+  padding: 0.1rem 0.9rem;
+  border-radius: var(--agent-raggio-piccolo);
+  background: var(--agent-velo);
+  box-shadow: var(--agent-velo-orlo);
 }
 
 .cprx-agent .agent-cerca > i {
@@ -1175,14 +1246,20 @@
 
 /* La scheda d'apertura di un'App: dice in una riga a che punto sei. Porta
    la tinta dell'App, quindi cambia da sola passando da un'App all'altra. */
+/* Il blocco d'apertura porta l'angolo tagliato — il motivo ricorrente del
+   progetto — e la sfumatura diagonale della tinta che si spegne sul fondo.
+   Il taglio e' in percentuale: la scheda si allarga con lo schermo, e un
+   taglio in pixel su un blocco largo diventa una scheggia. */
 .cprx-agent .agent-eroe {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  padding: 0.9rem 0.85rem;
-  border-radius: var(--agent-raggio);
+  padding: 1.1rem 1rem;
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 13px,
+                     100% 100%, 13px 100%, 0 calc(100% - 13px));
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 14%, transparent), transparent 70%),
+    linear-gradient(135deg, color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 16%, transparent), transparent 70%),
     var(--agent-pannello);
 }
 
@@ -1202,14 +1279,14 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 25%,
     var(--agent-rilievo), var(--agent-fondo));
   color: var(--agent-tenue);
   font-family: var(--agent-titoli);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   line-height: 1;
 }
@@ -1270,13 +1347,14 @@
   width: 100%;
   flex: 0 0 auto;
   margin-top: 0.6rem;
-  padding: 0.7rem;
+  padding: 0.8rem;
   border: 0;
-  border-radius: var(--agent-pillola);
-  background: var(--agent-pannello);
+  border-radius: var(--agent-raggio-piccolo);
+  background: var(--agent-velo);
+  box-shadow: var(--agent-velo-orlo);
   color: var(--agent-tenue);
   font-family: var(--agent-mono);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
 }
@@ -1459,12 +1537,14 @@
 .cprx-agent .agent-scocca button.agent-linguetta {
   flex: 0 0 auto;
   width: auto;
-  padding: 0.35rem 0.8rem;
+  padding: 0.45rem 1rem;
   border: 0;
   border-radius: var(--agent-pillola);
-  background: var(--agent-pannello);
+  background: var(--agent-velo);
+  box-shadow: var(--agent-velo-orlo);
   color: var(--agent-tenue);
-  font-size: 0.6rem;
+  font-family: var(--agent-mono);
+  font-size: 0.58rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -2018,22 +2098,28 @@
   gap: 0.3rem;
 }
 
+/* La bolla e' l'unica cosa che nel progetto resta tonda per intero, e con
+   l'angolo dalla parte di chi parla squadrato — e' quello che fa la coda.
+   Il resto dell'App e' squadrato, ma un filo di messaggi con le bolle a
+   spigolo vivo non somiglia piu' a una conversazione. */
 .cprx-agent .agent-bolla {
   display: flex;
   flex-direction: column;
   align-self: flex-start;
-  max-width: 82%;
-  padding: 0.4rem 0.55rem;
-  background: var(--agent-pannello);
-  border-left: 2px solid var(--agent-linea);
+  max-width: 80%;
+  padding: 0.62rem 0.8rem;
+  border: 0;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--agent-velo);
+  box-shadow: var(--agent-velo-orlo);
 }
 
 /* Le mie stanno a destra e portano il colore d'accento. */
 .cprx-agent .agent-bolla.mia {
   align-self: flex-end;
-  border-left: none;
-  border-right: 2px solid var(--agent-accento);
-  background: var(--agent-rilievo);
+  border-radius: 14px 14px 4px 14px;
+  background: color-mix(in srgb, var(--agent-accento) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--agent-accento) 32%, transparent);
 }
 
 .cprx-agent .agent-bolla.squillo {
@@ -2041,11 +2127,14 @@
   max-width: 100%;
   background: transparent;
   border: none;
+  border-radius: 0;
+  box-shadow: none;
   opacity: 0.65;
 }
 
 .cprx-agent .agent-bolla-testo {
-  font-size: 0.84rem;
+  font-family: var(--agent-titoli);
+  font-size: 0.94rem;
   line-height: 1.4;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -2459,7 +2548,7 @@
      cinque pixel oltre lo schermo e ci compariva la barra di scorrimento. */
   margin: auto -0.75rem -0.85rem;
   padding: 0.3rem 0.4rem 0.5rem;
-  border-top: 1px solid var(--agent-separatore);
+  border-top: 1px dashed var(--agent-separatore);
   background: var(--agent-fondo);
   flex: 0 0 auto;
 }
@@ -2470,9 +2559,12 @@
   flex-direction: column;
   align-items: center;
   gap: 0.22rem;
-  padding: 0.4rem 0.2rem 0.4rem;
+  padding: 0.45rem 0.2rem;
   border: 0;
-  border-radius: var(--agent-raggio-piccolo);
+  /* La tessera della linguetta resta tonda: nel progetto e' l'unico
+     rettangolo con un raggio vero, e serve a staccare quella accesa dalla
+     barra squadrata che la contiene. */
+  border-radius: 12px;
   background: transparent;
   color: var(--agent-tenue);
   line-height: normal;
@@ -3284,10 +3376,14 @@
   background: var(--agent-secondo);
 }
 
+/* Le righe di specifica sono lo stesso pannello degli elenchi: barra
+   d'accento a sinistra, capello attorno, tratteggio in mezzo. */
 .cprx-agent .agent-righe {
   margin-top: 0.5rem;
-  border: 1px solid var(--agent-linea);
-  background: var(--agent-pannello);
+  border: 0;
+  background: var(--agent-vetro);
+  box-shadow: var(--agent-orlo-pannello);
+  overflow: hidden;
 }
 
 .cprx-agent .agent-riga-stato {
@@ -3295,8 +3391,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.7rem 0.75rem;
-  border-bottom: 1px solid var(--agent-linea);
+  padding: 0.72rem 0.85rem;
+  border-bottom: 1px dashed var(--agent-separatore);
 }
 
 .cprx-agent .agent-riga-stato:last-child { border-bottom: 0; }

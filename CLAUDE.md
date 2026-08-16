@@ -314,14 +314,44 @@ del progettista, e diventa una regola `:hover` vera qui.
 
 ## La forma delle App
 
-Le due lingue visive del progetto di design convivono di proposito, e la
-regola è: **la home è il sistema, le App sono applicazioni.**
+Il progetto di design ha cambiato lingua, e adesso è **una sola**: spigoli
+vivi ovunque, fuori come dentro le App. Le schede tonde non ci sono più.
 
-Fuori — quadro, griglia, pagina di sistema — contorni netti, spigoli vivi,
-celle attaccate con un filo in mezzo. Dentro un'App tutto diventa una
-**scheda tonda** (`--agent-raggio`, 16px) con le righe separate da
-`--agent-separatore`, un filo più tenue di `--agent-linea`: dentro una scheda
-quel contrasto disegnerebbe un reticolo invece di un elenco.
+Al loro posto c'è il **pannello**: un vetro appena più scuro dello schermo
+(`--agent-vetro`), una **barra d'accento sul filo sinistro** e un capello
+bianco tutt'intorno (`--agent-orlo-pannello`). Da solo il vetro non si
+vedrebbe — a farlo leggere sono quei due segni. Le righe dentro sono
+separate da un **tratteggio** che prende la tinta dell'App
+(`--agent-separatore`): una linea piena disegnava un reticolo, e in un
+pannello senza cornice il tratteggio dice «continua» invece di «finisce
+qui».
+
+Restano tonde tre cose sole, e ognuna perché è un cerchio vero o quasi: il
+tondo delle iniziali, la tessera accesa delle linguette in fondo a Phone
+(12px, per staccarla dalla barra squadrata che la contiene) e le **bolle di
+un messaggio** — 14px con l'angolo dalla parte di chi parla squadrato, che è
+quello che fa la coda. Un filo di messaggi tutto a spigolo vivo non somiglia
+più a una conversazione.
+
+Il motivo che ricorre è invece l'**angolo tagliato** (`--agent-taglio`), in
+alto a destra e in basso a sinistra: ce l'hanno la mattonella della griglia e
+il blocco d'apertura di ogni App. Si fa con `clip-path`, non con un raggio, e
+le misure vanno in percentuale — il blocco si allarga con lo schermo, e un
+taglio in pixel su un blocco largo diventa una scheggia.
+
+**Attenzione a una trappola del CSS:** una variabile che ne contiene
+un'altra si risolve **dove è dichiarata**, non dove la si usa.
+`--agent-separatore` e `--agent-orlo-pannello` contengono
+`var(--agent-accento)`: dichiarate solo sulla radice si congelavano
+sull'accento del tema, e dentro Messaggi il filo del pannello restava giallo
+acido invece di diventare ciano. Sono ridichiarate **sulla scocca** — lo
+stesso elemento che porta `app-<chiave>`, e quindi la tinta dell'App.
+
+I caratteri sono due, come nel progetto: **Rajdhani** per il testo che si
+legge, il monospaziato per etichette, sigle e cifre. La regola sta su
+`.agent-scocca`, ma va rimessa a mano su quello che è dentro un `<button>` —
+una riga d'elenco spesso lo è, e la regola generica sui bottoni li porta
+tutti al monospaziato.
 
 Cinque pezzi ricorrono ovunque e stanno in un posto solo, sotto «i pezzi che
 ricorrono in ogni App»:
@@ -356,7 +386,7 @@ cambia niente, che ce ne siano lo cambia — e un numero dentro una pastiglia
 rossa in mezzo a un elenco tirava l'occhio più del nome di chi ha scritto.
 `.agent-conta` resta per il dock e per l'icona, dove il numero invece serve.
 
-`.agent-elenco` **è** la scheda: niente `gap`, niente riquadri impilati. Chi
+`.agent-elenco` **è** il pannello: niente `gap`, niente riquadri impilati. Chi
 scrive un elenco nuovo non deve fare niente, e chi vuole un filo colorato a
 sinistra (lo stato di un lavoro, una riga NCPD) usa
 `box-shadow: inset 3px 0 0` e non `border-left` — un bordo vero rientrerebbe
