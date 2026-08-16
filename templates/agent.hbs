@@ -48,13 +48,19 @@
   <div class="agent-vetro" aria-hidden="true"></div>
   {{#if scanlines}}<div class="agent-spazzata" aria-hidden="true"></div>{{/if}}
 
+  {{!-- Le sbarrette, le tacche, il «5G» e la batteria sono decorazione
+        dichiarata: l'Agent non misura ne' segnale ne' carica, e un numero
+        finto accanto a uno vero fa dubitare di tutti e due. --}}
   <div class="agent-stato">
     <span class="agent-ora" data-orologio>--:--</span>
+    <i class="agent-sbarra" aria-hidden="true"></i>
+    <span class="agent-rete">CITINET</span>
     <span class="agent-spia" aria-hidden="true"></span>
-    <span class="agent-rete">NET</span>
     <span class="agent-os"></span>
     {{#if gps}}<span class="agent-gps" title="{{localize 'CPRX.TracciamentoGps'}}"><i class="fa-solid fa-location-crosshairs"></i></span>{{/if}}
     <span class="agent-tacche" aria-hidden="true"><i></i><i></i><i></i><i class="spenta"></i></span>
+    <span class="agent-banda" aria-hidden="true">5G</span>
+    <i class="agent-sbarra" aria-hidden="true"></i>
     <span class="agent-batteria" aria-hidden="true"><b></b></span>
   </div>
 

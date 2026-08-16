@@ -313,6 +313,26 @@
 
 .cprx-agent .agent-rete { color: var(--agent-secondo); }
 .cprx-agent .agent-os { flex: 1; opacity: 0.55; }
+
+/* Sull'Agent la campata in mezzo alla barra e' vuota, e nel prototipo ci
+   passa un filetto che sfuma. Nella console invece ci sta il numero libero,
+   quindi la regola guarda che sia vuota davvero. */
+.cprx-agent .agent-stato .agent-os:empty {
+  height: 1px;
+  opacity: 1;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--agent-secondo) 28%, transparent), transparent 65%);
+}
+
+/* La sbarretta che separa i gruppi della barra di stato. */
+.cprx-agent .agent-sbarra {
+  width: 1px;
+  height: 9px;
+  flex: 0 0 auto;
+  background: color-mix(in srgb, var(--agent-secondo) 35%, transparent);
+}
+
+.cprx-agent .agent-banda { flex: 0 0 auto; opacity: 0.8; }
 .cprx-agent .agent-ora {
   color: var(--agent-accento);
   font-variant-numeric: tabular-nums;
@@ -766,9 +786,17 @@
   width: 100%;
   max-width: 3.4rem;
   aspect-ratio: 1;
-  border-radius: 30%;
+  /* Lo spigolo tagliato del prototipo, non un angolo tondo: in alto a destra
+     e in basso a sinistra. In percentuale e non in pixel perche' la
+     mattonella si stringe con la colonna, e un taglio fisso su una casella
+     piu' piccola diventa uno smusso da mezzo lato.
+     `clip-path` taglia anche le ombre: quella interna segue il profilo (ed
+     e' quello che si vuole), quella esterna sparisce — per l'alone del
+     passaggio del mouse serve un `filter`. */
+  border-radius: 0;
+  clip-path: polygon(0 0, 78% 0, 100% 22%, 100% 100%, 22% 100%, 0 78%);
   background:
-    linear-gradient(160deg,
+    linear-gradient(150deg,
       color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 15%, transparent),
       color-mix(in srgb, var(--agent-pannello) 86%, transparent));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 30%, transparent);
@@ -782,10 +810,11 @@
 
 .cprx-agent .agent-scocca button.agent-icona:hover { transform: translateY(-2px); }
 
+/* L'alone passa da `filter` e non da `box-shadow`: con il `clip-path` sulla
+   piastra un'ombra esterna verrebbe tagliata via e non si vedrebbe. */
 .cprx-agent .agent-icona:hover .agent-icona-piastra {
-  box-shadow:
-    inset 0 0 0 1px var(--app-tinta, var(--agent-accento)),
-    0 0 22px -6px color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 60%, transparent);
+  box-shadow: inset 0 0 0 1px var(--app-tinta, var(--agent-accento));
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--app-tinta, var(--agent-accento)) 55%, transparent));
 }
 
 /* Il nome sta sopra allo sfondo, quindi si porta dietro la propria ombra:
@@ -2899,10 +2928,23 @@
   margin: 1.15rem 0 0.55rem;
 }
 
+/* Le parentesi quadre del prototipo. Le prende **solo** l'etichetta che apre
+   una riga di sezione — quella con il filetto accanto: le etichette sciolte
+   dentro un'App (FILTRI SENSORIALI, LIBRERIA) nel prototipo non le hanno, e
+   metterle a tutte avrebbe fatto sembrare tutto un titolo. Stanno nel CSS e
+   non nel testo perche' non sono una parola: sono la forma del titolo, e nei
+   file di lingua sarebbero finite dentro duecento chiavi. */
+.cprx-agent .agent-sezione-riga > .agent-etichetta:first-child::before { content: "[ "; }
+.cprx-agent .agent-sezione-riga > .agent-etichetta:first-child::after { content: " ]"; }
+
+/* Il filetto prende la tinta dell'App, come nel prototipo: su fondo scuro un
+   grigio a un pixel non si vede, ed era il motivo per cui la riga sembrava
+   un'etichetta sospesa invece di un titolo di sezione. */
 .cprx-agent .agent-filetto {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, var(--agent-linea), transparent);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--agent-accento) 40%, transparent), transparent 70%);
 }
 
 /* --- pagina 0: quadro ----------------------------------------------- */

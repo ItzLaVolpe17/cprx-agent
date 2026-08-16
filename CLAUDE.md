@@ -300,7 +300,13 @@ batteria e i tre interruttori della pagina di sistema, che nel mockup erano
 numeri inventati: al loro posto ci sono le uniche cose che l'Agent sa
 davvero di se' — numero, archivio, dispositivo impiantato, e il registro e' il
 filo vero. Le tacche di segnale nella barra di stato sono rimaste, ma sono
-`aria-hidden`: sono decorazione dichiarata, non una misura.
+`aria-hidden`: sono decorazione dichiarata, non una misura. Con loro stanno
+le sbarrette, il `5G` e la sagoma della batteria — tutti `aria-hidden`, per
+lo stesso motivo. Quello che **non** è stato portato dalla barra del
+prototipo è la **percentuale di carica**: `68` accanto alla batteria è un
+numero, e un numero finto accanto all'ora vera fa dubitare anche dell'ora.
+La rete invece dice `CITINET`, che è il nome che ha in gioco, non una
+misura.
 
 `style-hover` nel `.dc.html` **non fa niente**: il runtime del formato non lo
 implementa (in `support.js` la parola "hover" non compare). E' l'annotazione
@@ -329,6 +335,15 @@ ricorrono in ogni App»:
 | `.agent-cta` | il tasto pieno in fondo. **Uno solo per vista** |
 | `.agent-tasto-lungo` | la pillola scarica che chiude un elenco: «+ nuovo messaggio», «+ nuova nota» |
 | `.agent-punto` | il pallino del non letto |
+| `.agent-sezione-riga` | il titolo di sezione: etichetta, filetto, e a volte una cifra a destra |
+
+Il titolo di sezione porta le **parentesi quadre** del prototipo, e le porta
+dal CSS (`::before` / `::after` sull'etichetta che apre la riga) e non dal
+testo: non sono una parola, sono la forma del titolo, e nei file di lingua
+sarebbero finite dentro duecento chiavi. Le prende solo l'etichetta con il
+filetto accanto — quelle sciolte dentro un'App (`FILTRI SENSORIALI`,
+`LIBRERIA`) nel prototipo non le hanno, e metterle a tutte avrebbe fatto
+sembrare tutto un titolo.
 
 Il pieno è riservato al `.agent-cta`, ed è la ragione per cui i filtri
 restano tinti: se se lo prendessero anche loro non si capirebbe più qual è il
@@ -381,6 +396,14 @@ Quattro colonne, e la mattonella non è più un riquadro: è un **quadrato
 tondo** con dentro l'icona, e il nome sta **fuori**, sotto. Sopra uno sfondo
 il nome dentro la casella non si leggerebbe, e per questo si porta dietro la
 propria ombra.
+
+**Lo spigolo è tagliato, non tondo.** In alto a destra e in basso a sinistra,
+con `clip-path: polygon(...)` e le misure in percentuale — la mattonella si
+stringe con la colonna, e un taglio in pixel su una casella più piccola
+diventa uno smusso da mezzo lato. Il `clip-path` taglia anche le ombre:
+quella interna segue il profilo, ed è quello che si vuole; quella esterna
+sparisce, quindi l'alone del passaggio del mouse passa da `filter:
+drop-shadow()` e non da `box-shadow`.
 
 La tinta la prende da `app-<chiave>`, che il template mette sulla mattonella
 **e** che la scocca porta quando l'App si apre: i due selettori stanno nello
