@@ -69,6 +69,26 @@
   </button>
   {{/if}}
 
+  {{!-- La striscia di notifica: scende dall'alto e sta sopra allo schermo,
+        quindi si vede anche dentro un'App. Il contesto la mette solo quando
+        c'e' qualcosa di non letto e il telefono e' sbloccato — le viste che
+        coprono tutto lo schermo escono prima. --}}
+  {{#if banner}}
+  <button type="button" class="agent-banner {{banner.genere}}" data-action="bannerApri"
+          data-numero="{{banner.numero}}" data-quando="{{banner.quando}}">
+    <i class="{{banner.icona}} agent-banner-icona"></i>
+    <span class="agent-banner-testo">
+      <span class="agent-banner-riga">
+        <b class="agent-banner-nome">{{banner.titolo}}</b>
+        <span class="agent-banner-app">{{banner.app}}</span>
+      </span>
+      <span class="agent-banner-corpo">{{banner.testo}}</span>
+    </span>
+    <span class="agent-banner-chiudi" data-action="bannerChiudi" data-quando="{{banner.quando}}"
+          title="{{localize 'CPRX.Chiudi'}}"><i class="fa-solid fa-xmark"></i></span>
+  </button>
+  {{/if}}
+
   {{!-- Il saluto sta qui, nell'accensione: nella barra di stato veniva
         troncato dopo tre parole e non lo leggeva nessuno. --}}
   <div class="agent-avvio" aria-hidden="true">
@@ -122,6 +142,18 @@
       <span class="agent-campo-nome">{{localize "CPRX.CampoHandle"}}</span>
       <input type="text" name="handle" value="{{handle}}" placeholder="{{nomeAttore}}" />
     </label>
+
+    {{!-- Sei nomi di strada da cui pescare, sempre gli stessi per questo
+          personaggio. Riempiono il campo e basta: il nome vero lo si scrive
+          lo stesso, e il salvataggio resta quello del passo. --}}
+    <p class="agent-nota">{{localize "CPRX.SetupOppureScegli"}}</p>
+    <div class="agent-pillole">
+      {{#each handleScelte}}
+      <button type="button" class="agent-pillola" data-action="setupHandle"
+              data-handle="{{this}}">{{this}}</button>
+      {{/each}}
+    </div>
+
     <label class="agent-campo">
       <span class="agent-campo-nome">{{localize "CPRX.CampoNomeVero"}}</span>
       <input type="text" name="nomeVero" value="{{nomeVero}}" placeholder="{{nomeAttore}}" />
@@ -3227,6 +3259,110 @@
         </button>
         {{/if}}
         {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ====================== BRAINDANCE PLAYER ==================== --}}
+  {{!-- Il riproduttore. La libreria e' l'archivio condiviso filtrato sul
+        proprio numero: qui non si scrive niente, come nell'NCPD. I filtri
+        sensoriali sono etichette — finiscono nella carta in chat, e cosa
+        vogliano dire lo decide il tavolo. --}}
+  {{#if vistaBraindance}}
+  <div class="agent-schermo">
+    <header class="agent-testata">
+      <button type="button" class="agent-indietro agent-solo-icona" data-action="home">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <h3><i class="{{iconaApp}}"></i> {{etichettaApp}}</h3>
+    </header>
+
+    {{#if bdHaShard}}
+    <div class="agent-eroe agent-bd-lettore">
+      <span class="agent-etichetta acceso">{{bdGenere}}</span>
+      <span class="agent-eroe-titolo">{{bdTitolo}}</span>
+      <span class="agent-etichetta">{{bdAutore}}</span>
+
+      {{!-- L'onda nasce dall'identificativo dello shard: la stessa
+            registrazione ha sempre la stessa forma. Decorazione dichiarata. --}}
+      <div class="agent-bd-onda" aria-hidden="true">
+        {{#each bdOnda}}<i style="height: {{this}}%"></i>{{/each}}
+      </div>
+
+      <div class="agent-bd-tempi">
+        <span>{{bdMeta}}</span>
+        <span>{{bdDurata}}</span>
+      </div>
+
+      <div class="agent-bd-comandi">
+        <button type="button" class="agent-solo-icona agent-tondo-piccolo"
+                data-action="bdSalta" data-verso="indietro"
+                title="{{localize 'CPRX.BdPrecedente'}}"
+                {{#unless bdPuoScrivere}}disabled{{/unless}}>
+          <i class="fa-solid fa-backward-step"></i>
+        </button>
+        <button type="button" class="agent-solo-icona agent-bd-play"
+                data-action="bdRiproduci" title="{{localize 'CPRX.BdRiproduci'}}"
+                {{#unless bdPuoScrivere}}disabled{{/unless}}>
+          <i class="fa-solid fa-play"></i>
+        </button>
+        <button type="button" class="agent-solo-icona agent-tondo-piccolo"
+                data-action="bdSalta" data-verso="avanti"
+                title="{{localize 'CPRX.BdSuccessivo'}}"
+                {{#unless bdPuoScrivere}}disabled{{/unless}}>
+          <i class="fa-solid fa-forward-step"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.BdFiltri"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    <div class="agent-pillole">
+      {{#each bdFiltri}}
+      <button type="button" class="agent-pillola {{#if this.acceso}}attiva{{/if}}"
+              data-action="bdFiltro" data-filtro="{{this.chiave}}"
+              {{#unless ../bdPuoScrivere}}disabled{{/unless}}>{{this.etichetta}}</button>
+      {{/each}}
+    </div>
+
+    <div class="agent-bd-avviso {{bdGenereChiave}}">
+      <i class="fa-solid fa-circle"></i>
+      <span>{{bdAvviso}}</span>
+    </div>
+
+    {{#if bdVd}}
+    <div class="agent-righe">
+      <div class="agent-riga-stato">
+        <span class="agent-riga-nome">{{localize "CPRX.BdProvaRichiesta"}}</span>
+        <span class="agent-riga-valore">VD {{bdVd}}</span>
+      </div>
+    </div>
+    {{/if}}
+    {{/if}}
+
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.BdLibreria"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    {{#if bdVuota}}
+    <p class="agent-vuoto">{{localize "CPRX.BdLibreriaVuota"}}</p>
+    <p class="agent-nota">{{localize "CPRX.BdSoloMaster"}}</p>
+    {{else}}
+    <ul class="agent-elenco">
+      {{#each bdLibreria}}
+      <li class="agent-voce agent-bd-riga {{this.genere}} {{#if this.corrente}}corrente{{/if}}">
+        <button type="button" class="agent-voce-apri" data-action="bdScegli" data-id="{{this.id}}">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          <span class="agent-voce-sotto">{{this.meta}}</span>
+        </button>
+        {{#unless this.visto}}<span class="agent-punto" aria-hidden="true"></span>{{/unless}}
       </li>
       {{/each}}
     </ul>

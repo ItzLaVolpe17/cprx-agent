@@ -3875,6 +3875,7 @@
 .cprx-agent .agent-scocca.app-impostazioni,
 .cprx-agent .agent-scocca.app-corp,
 .cprx-agent .agent-scocca.app-calendario,
+.cprx-agent .agent-scocca.app-braindance,
 .cprx-agent .agent-icona.app-bigiaaa,
 .cprx-agent .agent-voce.app-bigiaaa {
   --agent-accento: var(--app-tinta);
@@ -4021,6 +4022,14 @@
   --app-tinta: #ff4f9a;
   --app-su-tinta: #17040c;
   --app-marchio: "NIGHT CITY WIRE";
+}
+
+.cprx-agent .agent-scocca.app-braindance,
+.cprx-agent .agent-icona.app-braindance,
+.cprx-agent .agent-voce.app-braindance {
+  --app-tinta: #b06cff;
+  --app-su-tinta: #100519;
+  --app-marchio: "ZETATECH · RIPRODUTTORE BD";
 }
 
 /* --- forme che servono solo alle App del DLC -------------------------- */
@@ -5572,6 +5581,197 @@
 }
 
 /* =====================================================================
+   La striscia di notifica
+   Scende dall'alto e sta **sopra** allo schermo: la scocca ha quattro figli
+   posizionati (sfondo, velo, vetro, spazzata) e senza `z-index` la striscia
+   ci finirebbe sotto — la stessa trappola della barra di stato.
+   ===================================================================== */
+
+/* La regola pesa `.agent-scocca button`, come tutte quelle sui bottoni: senza
+   quella specificita' il fondo del bottone resta trasparente e sotto la
+   striscia si legge la testata dell'App (trappola 4). */
+.cprx-agent .agent-scocca button.agent-banner {
+  position: absolute;
+  /* In cima, sopra la barra di stato: e' li' che sta su un telefono vero, ed
+     e' l'unico posto dove non copre il tasto indietro della testata. */
+  top: 0.4rem;
+  left: 0.6rem;
+  right: 0.6rem;
+  z-index: 14;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: auto;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--agent-linea);
+  border-radius: var(--agent-raggio);
+  background: var(--agent-rilievo);
+  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.95);
+  text-align: left;
+  cursor: pointer;
+  animation: cprx-banner 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+@keyframes cprx-banner {
+  from { transform: translateY(-120%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Il genere codifica il filo a sinistra come nelle notifiche del quadro:
+   giallo la corrispondenza, rosso quello che e' andato storto. */
+.cprx-agent .agent-scocca button.agent-banner.sms { box-shadow: inset 3px 0 0 var(--agent-accento), 0 14px 30px -12px rgba(0, 0, 0, 0.95); }
+.cprx-agent .agent-scocca button.agent-banner.persa { box-shadow: inset 3px 0 0 var(--agent-critico), 0 14px 30px -12px rgba(0, 0, 0, 0.95); }
+
+.cprx-agent .agent-banner-icona {
+  flex: 0 0 auto;
+  width: 1.9rem;
+  height: 1.9rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--agent-accento) 18%, transparent);
+  color: var(--agent-accento);
+  font-size: 0.8rem;
+}
+
+.cprx-agent .agent-banner-testo {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.cprx-agent .agent-banner-riga {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cprx-agent .agent-banner-nome {
+  font-size: 0.82rem;
+  color: var(--agent-testo);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cprx-agent .agent-banner-app {
+  flex: 0 0 auto;
+  font-family: var(--agent-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--agent-debole);
+}
+
+.cprx-agent .agent-banner-corpo {
+  font-size: 0.74rem;
+  color: var(--agent-tenue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cprx-agent .agent-banner-chiudi {
+  flex: 0 0 auto;
+  width: 1.4rem;
+  height: 1.4rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--agent-linea);
+  color: var(--agent-tenue);
+  font-size: 0.62rem;
+}
+
+/* =====================================================================
+   Braindance Player
+   ===================================================================== */
+
+/* L'onda: barre decorative, altezza dal seme dello shard. */
+.cprx-agent .agent-bd-onda {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 2.4rem;
+  margin-top: 0.7rem;
+}
+
+.cprx-agent .agent-bd-onda i {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--agent-accento) 55%, transparent);
+}
+
+.cprx-agent .agent-bd-tempi {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  font-family: var(--agent-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--agent-debole);
+}
+
+.cprx-agent .agent-bd-comandi {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin-top: 0.7rem;
+}
+
+/* Il tasto pieno del riproduttore. Foundry porta i bottoni a larghezza
+   piena e in un contenitore flex quella larghezza diventa la base: senza
+   `width: auto` i tre comandi finiscono uno sotto l'altro. */
+.cprx-agent .agent-scocca button.agent-bd-play {
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--agent-accento);
+  color: var(--agent-su-accento);
+  font-size: 1rem;
+}
+
+.cprx-agent .agent-bd-avviso {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--agent-raggio);
+  background: var(--agent-pannello);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--agent-tenue);
+}
+
+.cprx-agent .agent-bd-avviso i {
+  flex: 0 0 auto;
+  margin-top: 0.35rem;
+  font-size: 0.4rem;
+  color: var(--agent-ok);
+}
+
+.cprx-agent .agent-bd-avviso.grezza i { color: var(--agent-accento); }
+.cprx-agent .agent-bd-avviso.illegale i { color: var(--agent-critico); }
+.cprx-agent .agent-bd-avviso.illegale { color: var(--agent-testo); }
+
+/* Il filo colorato di una riga della libreria dice il genere. Un bordo vero
+   rientrerebbe il contenuto solo sulle righe che ce l'hanno. */
+.cprx-agent .agent-bd-riga.grezza { box-shadow: inset 3px 0 0 var(--agent-accento); }
+.cprx-agent .agent-bd-riga.illegale { box-shadow: inset 3px 0 0 var(--agent-critico); }
+.cprx-agent .agent-bd-riga.corrente .agent-voce-titolo { color: var(--agent-accento); }
+
+/* =====================================================================
    Accessibilita'
    ===================================================================== */
 
@@ -5591,4 +5791,5 @@
   /* La spazzata e la spia sono le due cose che si muovono da sole. */
   .cprx-agent .agent-spazzata { display: none; }
   .cprx-agent .agent-spia { animation: none; }
+  .cprx-agent .agent-banner { animation: none; }
 }

@@ -603,6 +603,106 @@
   </div>
   {{/if}}
 
+  {{!-- La libreria degli shard braindance. Quarto archivio condiviso, stessa
+        regola degli altri tre: cosa c'e' dentro una registrazione lo scrive
+        il master, e nel riproduttore non c'e' un tasto per aggiungerne.
+        Uno shard va «a chiunque» oppure a un numero solo. --}}
+  {{#if vistaMasterBd}}
+  <div class="agent-schermo">
+    <div class="agent-sezione-riga">
+      <span class="agent-etichetta">{{localize "CPRX.BdLibreria"}}</span>
+      <span class="agent-filetto"></span>
+    </div>
+
+    {{#if scheda}}
+    <div class="agent-modulo">
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.CampoTitolo"}} *</span>
+        <input type="text" name="bdTitolo" value="{{scheda.titolo}}" />
+      </label>
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.BdAutore"}}</span>
+        <input type="text" name="bdAutore" value="{{scheda.autore}}" />
+      </label>
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.BdGenere"}}</span>
+        <select name="bdGenere">
+          {{#each scheda.generi}}
+          <option value="{{this.chiave}}" {{#if this.scelto}}selected{{/if}}>{{this.etichetta}}</option>
+          {{/each}}
+        </select>
+      </label>
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.BdDestinatario"}}</span>
+        <select name="bdDestinatario">
+          {{#each scheda.destinatari}}
+          <option value="{{this.chiave}}" {{#if this.scelta}}selected{{/if}}>{{this.nome}}</option>
+          {{/each}}
+        </select>
+      </label>
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.BdDurata"}}</span>
+        <input type="number" name="bdDurata" min="1" step="1" value="{{scheda.durata}}" />
+      </label>
+      {{!-- Zero vuol dire «quello del genere»: un BD nero aggiunto senza
+            toccare il campo chiede comunque la prova. --}}
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.BdVd"}}</span>
+        <input type="number" name="bdVd" min="0" step="1" value="{{scheda.vd}}"
+               placeholder="{{localize 'CPRX.BdVdNota'}}" />
+      </label>
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.BdMeta"}}</span>
+        <input type="text" name="bdMeta" value="{{scheda.meta}}"
+               placeholder="{{localize 'CPRX.BdMetaNota'}}" />
+      </label>
+      <label class="agent-campo">
+        <span class="agent-campo-nome">{{localize "CPRX.BdTesto"}}</span>
+        <textarea name="bdTesto" rows="4">{{scheda.testo}}</textarea>
+      </label>
+
+      <div class="agent-modulo-azioni">
+        <button type="button" class="agent-primario" data-action="bdSalva">
+          <i class="fa-solid fa-floppy-disk"></i> {{localize "CPRX.Salva"}}
+        </button>
+        <button type="button" data-action="fascicoloAnnulla">{{localize "CPRX.Annulla"}}</button>
+      </div>
+
+      {{#unless scheda.nuova}}
+      <button type="button" class="agent-rosso agent-conferma" data-action="bdElimina"
+              data-id="{{scheda.id}}">
+        <i class="fa-solid fa-trash"></i> {{localize "CPRX.Elimina"}}
+      </button>
+      {{/unless}}
+    </div>
+    {{else}}
+
+    <button type="button" class="agent-conferma" data-action="fascicoloNuovo">
+      <i class="fa-solid fa-plus"></i> {{localize "CPRX.BdNuovoShard"}}
+    </button>
+
+    {{#if vuoto}}
+    <p class="agent-vuoto">{{localize "CPRX.BdLibreriaVuota"}}</p>
+    {{else}}
+    <ul class="agent-elenco">
+      {{#each voci}}
+      <li class="agent-voce">
+        <button type="button" class="agent-voce-apri" data-action="fascicoloApri" data-id="{{this.id}}">
+          <span class="agent-voce-titolo">{{this.titolo}}</span>
+          {{#if this.riga}}<span class="agent-voce-sotto">{{this.riga}}</span>{{/if}}
+        </button>
+        <div class="agent-voce-azioni">
+          <button type="button" class="agent-solo-icona" data-action="bdElimina" data-id="{{this.id}}"
+                  title="{{localize 'CPRX.Elimina'}}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+
   {{!-- ============================== ARENA ========================== --}}
   {{#if vistaMasterArena}}
   <div class="agent-schermo">

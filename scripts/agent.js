@@ -280,10 +280,13 @@ const APP_ACQUISTABILI = {
     vista: "bigiaaa"
   },
 
-  /* --- due App che il manuale non ha ------------------------------- */
+  /* --- tre App che il manuale non ha ------------------------------- */
   /* Vengono dal prototipo, non dal DLC. Le regole per Sentinel pero'   */
   /* ci sono: sono quelle dell'hacking di un Agent, viste dalla parte   */
-  /* di chi lo subisce. Patch Pro invece sta tutta dentro Garden.       */
+  /* di chi lo subisce. Patch Pro invece sta tutta dentro Garden, e il  */
+  /* Braindance Player appoggia sull'unica regola che il manuale da'    */
+  /* davvero su un BD: chi si mette in testa roba grezza tira           */
+  /* Resistere a Torture/Droghe.                                        */
 
   sentinel: {
     nome: "Netwatch Sentinel",
@@ -302,6 +305,15 @@ const APP_ACQUISTABILI = {
     icona: "fa-solid fa-clapperboard",
     descrizione: "CPRX.DescPatchpro",
     vista: "patchpro"
+  },
+  braindance: {
+    nome: "Braindance Player",
+    produttore: "Zetatech",
+    prezzo: 100,
+    disponibilita: "CPRX.DispPremium",
+    icona: "fa-solid fa-vr-cardboard",
+    descrizione: "CPRX.DescBraindance",
+    vista: "braindance"
   },
 
   /* Corp Link non si compra: te la installa il datore di lavoro. Costa
@@ -1673,6 +1685,42 @@ function serialeDi(attore) {
  */
 const SETUP_PASSI = ["avvio", "identita", "aspetto", "casa", "dispositivo"];
 
+/**
+ * Nomi di strada da cui pescare, per chi al passo dell'identita' resta a
+ * guardare il campo vuoto. Sono un suggerimento, non una scelta: il campo
+ * resta scrivibile e la pillola lo riempie e basta.
+ *
+ * Sono un **elenco chiuso** spedito col modulo, come gli sfondi, e non si
+ * traducono: un nome di strada e' un nome proprio.
+ */
+const HANDLE_SUGGERITI = [
+  "Nomad", "Static", "Vixen", "Crash", "Halo", "Fuse", "Nyx", "Rook",
+  "Ghost", "Sable", "Wire", "Cinder", "Vega", "Ronin", "Echo", "Kestrel",
+  "Molotov", "Zenit", "Bishop", "Onyx", "Rasp", "Vetro", "Quarzo", "Lupo"
+];
+
+/** Quanti suggerimenti si mostrano. */
+const HANDLE_QUANTI = 6;
+
+/**
+ * Sei nomi, sempre gli stessi per quel personaggio: nascono dal suo
+ * identificativo, come il seriale e come l'onda del braindance. Sei nomi che
+ * cambiano a ogni ridisegno sarebbero una slot machine, non un suggerimento.
+ */
+function handleSuggeriti(attore) {
+  const testo = String(attore?.id ?? "");
+  let seme = 7;
+  for (let i = 0; i < testo.length; i++) seme = (seme * 31 + testo.charCodeAt(i)) % 2147483647;
+
+  const rimasti = HANDLE_SUGGERITI.slice();
+  const scelti = [];
+  while (scelti.length < HANDLE_QUANTI && rimasti.length) {
+    seme = (seme * 1103515245 + 12345) % 2147483648;
+    scelti.push(rimasti.splice(seme % rimasti.length, 1)[0]);
+  }
+  return scelti;
+}
+
 function setupFatto(attore) {
   // Una volta che il setup e' cominciato decide solo il flag. Senza questo
   // ramo il primo passo si sabotava da solo: scrivi l'handle, l'euristica
@@ -1705,7 +1753,8 @@ const CHIAVI_RIPRISTINO = [
   "contatti", "note", "lavori", "banca", "filo", "letti", "chiamateViste",
   "casa", "corp", "calendario", "downtime",
   "fortify", "medscan", "ziggurat", "watchbox", "brainwasher", "bigiaaa",
-  "hustool", "roachrace", "elflines", "sentinel", "patchpro", "gladiatore"
+  "hustool", "roachrace", "elflines", "sentinel", "patchpro", "braindance",
+  "gladiatore"
 ];
 
 async function ripristinaAgent(attore) {
@@ -3171,6 +3220,100 @@ async function scriviGardenPatch(voci) {
     { voci: voci.slice(-GARDEN_MASSIMO) });
 }
 
+/* --- Braindance Player ------------------------------------------------ */
+
+/**
+ * Uno shard non e' di nessun personaggio: e' una registrazione che gira per
+ * Night City, e chi decide cosa c'e' dentro e' il master. Quindi la libreria
+ * e' il **quarto archivio condiviso** dopo il casellario NCPD, il Database
+ * Urbano e l'archivio aziendale, con la stessa regola: ci scrive solo il GM,
+ * dalla console, e l'App non ha un tasto di scrittura.
+ *
+ *   { id, titolo, autore, genere, durata, meta, testo, vd, a, quando }
+ *
+ * `a` e' il numero a cui lo shard e' arrivato, oppure `"*"` se e' roba che
+ * si trova in giro — la stessa forma di `corp: "*"` nell'archivio aziendale.
+ * `durata` sono minuti, `vd` la soglia della prova (0 = nessuna prova).
+ */
+const BD_GENERI = {
+  legale: { etichetta: "CPRX.BdLegale", avviso: "CPRX.BdAvvisoLegale", vd: 0 },
+  grezza: { etichetta: "CPRX.BdGrezza", avviso: "CPRX.BdAvvisoGrezza", vd: 13 },
+  illegale: { etichetta: "CPRX.BdIllegale", avviso: "CPRX.BdAvvisoIllegale", vd: 15 }
+};
+
+/**
+ * I cinque filtri sensoriali. Sono **etichette, non meccaniche**, per la
+ * stessa ragione delle attivita' del tempo morto: quanto pesa sentire il
+ * dolore di chi ha registrato lo decide il master, non una tabella inventata
+ * qui. Il modulo si limita a scrivere nella carta in chat quali sensi erano
+ * accesi, che e' esattamente quello che serve al tavolo per giudicare.
+ */
+const BD_FILTRI = ["vista", "udito", "olfatto", "tatto", "emozioni"];
+
+/** Come si chiama Resistere a Torture/Droghe sulla scheda, in ogni lingua. */
+const NOMI_RESISTERE = /tortur|folter/i;
+
+/** Quanti shard tiene la libreria condivisa: oltre, cadono i piu' vecchi. */
+const BD_MASSIMO = 200;
+
+function bdArchivio(numero = null) {
+  const dati = game.settings.get(MODULO, "bdArchivio");
+  let voci = Array.isArray(dati) ? dati : [];
+
+  if (numero !== null) voci = voci.filter(v => (v.a ?? "*") === "*" || v.a === numero);
+
+  return voci.slice().sort((a, b) => (b.quando ?? 0) - (a.quando ?? 0));
+}
+
+async function scriviBdArchivio(voci) {
+  return game.settings.set(MODULO, "bdArchivio", voci.slice(-BD_MASSIMO));
+}
+
+/** Il genere di uno shard, con il ripiego: quello che non conosco e' legale. */
+function genereBd(voce) {
+  return BD_GENERI[voce?.genere] ? voce.genere : "legale";
+}
+
+/**
+ * La soglia della prova. Sta sulla voce se il master l'ha scritta, altrimenti
+ * e' quella del genere: cosi' un master che aggiunge un BD nero senza toccare
+ * il campo ottiene comunque la prova, e uno che vuole un numero suo lo scrive.
+ */
+function vdBd(voce) {
+  const scritto = Number(voce?.vd);
+  return Number.isFinite(scritto) && scritto > 0 ? scritto : BD_GENERI[genereBd(voce)].vd;
+}
+
+function statoBraindance(attore) {
+  const stato = attore?.getFlag(MODULO, "braindance") ?? {};
+  const filtri = {};
+  for (const chiave of BD_FILTRI) filtri[chiave] = stato.filtri?.[chiave] !== false;
+  return {
+    shard: stato.shard ?? null,
+    filtri,
+    visti: Array.isArray(stato.visti) ? stato.visti : []
+  };
+}
+
+/**
+ * L'onda del riproduttore. E' decorazione, ma **stabile**: nasce
+ * dall'identificativo dello shard, quindi la stessa registrazione ha sempre
+ * la stessa forma. Un'onda casuale che cambia a ogni ridisegno si nota
+ * subito e fa sembrare rotto tutto il resto — la stessa ragione per cui il
+ * seriale nasce dall'id dell'attore.
+ */
+function ondaBd(id, quante = 40) {
+  const testo = String(id ?? "");
+  const barre = [];
+  let seme = 0;
+  for (let i = 0; i < testo.length; i++) seme = (seme * 31 + testo.charCodeAt(i)) % 100000;
+  for (let i = 0; i < quante; i++) {
+    seme = (seme * 1103515245 + 12345) % 2147483648;
+    barre.push(18 + (seme % 82));
+  }
+  return barre;
+}
+
 /* ------------------------------------------------------------------ */
 /* Catalogo della Vetrina                                               */
 /* Tutti i compendi di oggetti in un elenco solo. L'indicizzazione e'    */
@@ -3432,6 +3575,7 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
       salvaPreferenze: Agent.#onSalvaPreferenze,
       // Prima accensione
       setupAvanti: Agent.#onSetupAvanti,
+      setupHandle: Agent.#onSetupHandle,
       setupIndietro: Agent.#onSetupIndietro,
       ripristina: Agent.#onRipristina,
       // Corp Link
@@ -3545,7 +3689,13 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
       patchScheda: Agent.#onPatchScheda,
       patchBozza: Agent.#onPatchBozza,
       patchElimina: Agent.#onPatchElimina,
-      patchPubblica: Agent.#onPatchPubblica
+      patchPubblica: Agent.#onPatchPubblica,
+      bdScegli: Agent.#onBdScegli,
+      bdSalta: Agent.#onBdSalta,
+      bdFiltro: Agent.#onBdFiltro,
+      bdRiproduci: Agent.#onBdRiproduci,
+      bannerApri: Agent.#onBannerApri,
+      bannerChiudi: Agent.#onBannerChiudi
     }
   };
 
@@ -3655,6 +3805,13 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
     // Il vetro di blocco copre tutto il resto finche' non arriva l'impronta.
     if (!this._sbloccato) return { ...base, ...this.#contestoBlocco() };
 
+    // La striscia di notifica. Sta qui e non in `base` di proposito: le
+    // quattro viste che coprono tutto lo schermo — guasto, chiamata, setup,
+    // vetro di blocco — sono gia' uscite, e cosi' non serve spegnerla in
+    // ognuna passando `banner: null`, che e' il trucco che il dock deve
+    // usare perche' lui in `base` ci sta davvero.
+    Object.assign(base, this.#contestoBanner());
+
     switch (this.stato.app) {
       case null:
       case undefined:
@@ -3702,6 +3859,7 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
         bigiaaa: () => this.#contestoBigIaaa(),
         sentinel: () => this.#contestoSentinel(),
         patchpro: () => this.#contestoPatchpro(),
+        braindance: () => this.#contestoBraindance(),
         corp: () => this.#contestoCorp()
       };
       if (costruttori[vista]) {
@@ -3980,6 +4138,73 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
+   * La striscia che scende dall'alto quando arriva qualcosa. Viene dal
+   * prototipo, e copre il buco che le notifiche del quadro lasciavano
+   * aperto: dentro un'App non c'era **niente** che dicesse che ti hanno
+   * scritto, e il quadro lo vedevi solo tornando indietro.
+   *
+   * Mostra una riga sola — la piu' recente non letta — e non e' un elenco:
+   * un telefono che impila cinque strisce sopra lo schermo non fa leggere
+   * niente. Le altre restano nelle notifiche del quadro, che e' il posto
+   * dove si guarda cos'e' successo.
+   *
+   * `this._bannerChiuso` sta sull'istanza come `_pagina`: chiudere la
+   * striscia non e' un dato del personaggio, e mettere via il telefono deve
+   * poterla far tornare.
+   *
+   * Non compare sul filo che stai gia' leggendo — ti direbbe una cosa che
+   * hai sotto gli occhi — e un numero coperto resta `???` qui come ovunque.
+   */
+  #contestoBanner() {
+    const mio = this.attore.id;
+    const letti = this.attore.getFlag(MODULO, "letti") ?? {};
+    const viste = Number(this.attore.getFlag(MODULO, "chiamateViste")) || 0;
+    const chiuso = Number(this._bannerChiuso) || 0;
+
+    let ultima = null;
+    for (const v of traffico(this.attore)) {
+      if (v.daAttore === mio) continue;
+      if (v.tipo !== TIPO.SMS && !(v.tipo === TIPO.CHIAMATA && v.stato === "squilla")) continue;
+
+      const chiave = v.idGruppo ? chiaveGruppo(v.idGruppo) : v.da;
+      const nuovo = v.tipo === TIPO.SMS
+        ? v.quando > (letti[chiave] ?? 0)
+        : v.quando > viste;
+      if (!nuovo || v.quando <= chiuso) continue;
+      if (!ultima || v.quando > ultima.quando) ultima = { ...v, chiave };
+    }
+
+    if (!ultima) return {};
+
+    // Il filo che stai leggendo non ha bisogno di una striscia che te lo
+    // annunci.
+    if (this.stato.app === "messaggi" && this.stato.conversazione === ultima.chiave) return {};
+
+    const coperto = !ultima.idGruppo && this.#coperto(ultima.da, !!ultima.anonimo);
+    const chi = coperto
+      ? etichettaCoperta()
+      : (nomePerNumero(this.attore, ultima.da) || ultima.daNome || ultima.da || "—");
+
+    const gruppo = !!ultima.idGruppo;
+    const chiamata = ultima.tipo === TIPO.CHIAMATA;
+
+    return {
+      banner: {
+        titolo: gruppo ? (ultima.nomeGruppo || nomeGruppoPredefinito(membriDi(ultima))) : chi,
+        testo: chiamata
+          ? game.i18n.localize("CPRX.AvvisoChiamataPersa")
+          : (gruppo ? `${chi}: ` : "") + (ultima.testo ?? "").slice(0, 70),
+        app: game.i18n.localize(chiamata ? "CPRX.AppTelefono" : "CPRX.AppMessaggi"),
+        icona: chiamata ? "fa-solid fa-phone-slash"
+          : (gruppo ? "fa-solid fa-users" : "fa-solid fa-comment-sms"),
+        genere: chiamata ? "persa" : "sms",
+        numero: chiamata ? "" : ultima.chiave,
+        quando: ultima.quando
+      }
+    };
+  }
+
+  /**
    * La pagina di sistema. Il mockup qui mostrava segnale, batteria e tre
    * interruttori inventati: al loro posto stanno le uniche cose che l'Agent
    * sa davvero di se stesso — il numero, quanto e' pieno l'archivio, se il
@@ -4084,6 +4309,7 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
       nomeAttore: this.attore?.name ?? "",
 
       /* --- identita' --- */
+      handleScelte: handleSuggeriti(this.attore),
       handle: this.attore.getFlag(MODULO, "handle") ?? "",
       nomeVero: this.attore.getFlag(MODULO, "nomeVero") ?? "",
       salutoHandle: salutoCon(this.attore) === "handle",
@@ -5350,6 +5576,68 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
     };
   }
 
+  /* --- Braindance Player -------------------------------------------- */
+
+  /**
+   * Il riproduttore. La libreria e' l'archivio condiviso filtrato sul proprio
+   * numero: gli shard che girano per la citta' (`a: "*"`) piu' quelli
+   * arrivati a te. Nell'App non c'e' un tasto di scrittura, per la stessa
+   * ragione per cui non ce n'e' uno nell'NCPD — cosa c'e' dentro una
+   * registrazione non lo decide chi la guarda.
+   *
+   * I cinque filtri sensoriali stanno sul flag e non fanno di per se' niente:
+   * finiscono scritti nella carta in chat, e a quel punto e' il tavolo a
+   * decidere cosa vuol dire aver guardato un BD nero a sensi aperti. E' la
+   * stessa scelta del tempo morto — etichette, non meccaniche.
+   */
+  #contestoBraindance() {
+    const mio = numeroDi(this.attore);
+    const stato = statoBraindance(this.attore);
+    const libreria = bdArchivio(mio);
+
+    // Lo shard scelto, con il ripiego sul primo della libreria: aprire il
+    // riproduttore su un lettore vuoto quando hai quattro registrazioni in
+    // tasca non dice niente a nessuno.
+    const corrente = libreria.find(v => v.id === stato.shard) ?? libreria[0] ?? null;
+    const genere = corrente ? genereBd(corrente) : null;
+
+    const minuti = (v) => Math.max(1, Math.floor(Number(v?.durata) || 1));
+    const durata = (v) => `${minuti(v)}:00`;
+
+    return {
+      vistaBraindance: true,
+      bdVuota: libreria.length === 0,
+      bdHaShard: !!corrente,
+      bdPuoScrivere: this.puoScrivere,
+      bdTitolo: corrente?.titolo ?? "",
+      bdAutore: corrente?.autore ?? "",
+      bdMeta: corrente?.meta ?? "",
+      bdGenere: genere ? game.i18n.localize(BD_GENERI[genere].etichetta) : "",
+      bdGenereChiave: genere,
+      bdIllegale: genere === "illegale",
+      bdDurata: corrente ? durata(corrente) : "0:00",
+      bdOnda: corrente ? ondaBd(corrente.id) : [],
+      bdVd: corrente ? vdBd(corrente) : 0,
+      bdAvviso: corrente ? game.i18n.localize(BD_GENERI[genere].avviso) : "",
+      bdVisto: !!corrente && stato.visti.includes(corrente.id),
+      bdFiltri: BD_FILTRI.map(chiave => ({
+        chiave,
+        etichetta: game.i18n.localize(`CPRX.BdFiltro${chiave.charAt(0).toUpperCase()}${chiave.slice(1)}`),
+        acceso: stato.filtri[chiave]
+      })),
+      bdLibreria: libreria.map(v => ({
+        id: v.id,
+        titolo: v.titolo || "—",
+        autore: v.autore || "",
+        meta: [game.i18n.localize(BD_GENERI[genereBd(v)].etichetta),
+               `${minuti(v)}′`, v.meta].filter(Boolean).join(" · "),
+        genere: genereBd(v),
+        corrente: v.id === corrente?.id,
+        visto: stato.visti.includes(v.id)
+      }))
+    };
+  }
+
   /**
    * Big IAAA: da +2 a +3 alle Prove di Archivistica, e i dati di utilizzo
    * alla Ziggurat. La seconda meta' non e' una battuta: e' scritta nel
@@ -6336,6 +6624,9 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
     this._avviato = false;
     // Chiudere la finestra e' mettere via il telefono: si riblocca.
     this._sbloccato = false;
+    // E la striscia chiusa torna: era un gesto su quella sessione, non un
+    // dato del personaggio.
+    this._bannerChiuso = 0;
     super._onClose?.(options);
   }
 
@@ -8637,6 +8928,145 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render();
   }
 
+  /* --- la striscia di notifica --------------------------------------- */
+
+  /**
+   * Toccare la striscia porta dove e' successa la cosa: un filo se c'e' un
+   * numero, i recenti del telefono se era una chiamata persa. E' la stessa
+   * regola delle notifiche del quadro, e passa dagli stessi due handler.
+   */
+  static async #onBannerApri(event, target) {
+    this._bannerChiuso = Number(target.dataset.quando) || Date.now();
+
+    const numero = target.dataset.numero || "";
+    if (numero) {
+      this.stato = { app: "messaggi", modifica: null, conversazione: numero };
+      this._scorrimento = 0;
+      await segnaLetta(this.attore, numero);
+      this.render();
+      return;
+    }
+
+    this.#vai("telefono", { telefonoScheda: "recenti" });
+    this.#segnaChiamateViste();
+  }
+
+  /**
+   * Chiudere la striscia non segna niente per letto: il pallino nell'elenco
+   * resta, e il quadro continua a portare la riga. E' un gesto sulla
+   * finestra, non sulla scheda — per questo sta sull'istanza.
+   */
+  static #onBannerChiudi(event, target) {
+    event.stopPropagation();
+    this._bannerChiuso = Number(target.dataset.quando) || Date.now();
+    this.render();
+  }
+
+  /* --- Braindance Player -------------------------------------------- */
+
+  static async #onBdScegli(event, target) {
+    if (!this.puoScrivere) return;
+    const stato = statoBraindance(this.attore);
+    await this.attore.setFlag(MODULO, "braindance", { ...stato, shard: target.dataset.id });
+    this.render();
+  }
+
+  /**
+   * Avanti e indietro nella libreria. Il riproduttore ha i tre tasti del
+   * prototipo, ma qui non c'e' niente da mandare avanti dentro una
+   * registrazione: quello che si cambia e' lo shard.
+   */
+  static async #onBdSalta(event, target) {
+    if (!this.puoScrivere) return;
+
+    const libreria = bdArchivio(numeroDi(this.attore));
+    if (!libreria.length) return;
+
+    const stato = statoBraindance(this.attore);
+    const dove = Math.max(0, libreria.findIndex(v => v.id === stato.shard));
+    const passo = target.dataset.verso === "indietro" ? -1 : 1;
+    const prossimo = libreria[(dove + passo + libreria.length) % libreria.length];
+
+    await this.attore.setFlag(MODULO, "braindance", { ...stato, shard: prossimo.id });
+    this.render();
+  }
+
+  static async #onBdFiltro(event, target) {
+    if (!this.puoScrivere) return;
+
+    const chiave = target.dataset.filtro;
+    if (!BD_FILTRI.includes(chiave)) return;
+
+    const stato = statoBraindance(this.attore);
+    await this.attore.setFlag(MODULO, "braindance", {
+      ...stato,
+      filtri: { ...stato.filtri, [chiave]: !stato.filtri[chiave] }
+    });
+    this.render();
+  }
+
+  /**
+   * Riprodurre uno shard. Tre cose, in quest'ordine:
+   *
+   * 1. il tempo del mondo avanza della durata della registrazione, con la
+   *    solita regola — solo se a premere e' un GM, come 4Tify e HusTool;
+   * 2. se lo shard ha una soglia si tira **VOL + Resistere a Torture/Droghe**,
+   *    che e' l'unica prova che il manuale mette davvero in mano a chi si
+   *    infila in testa roba grezza;
+   * 3. la carta in chat dice cosa hai visto e a quali sensi eri aperto.
+   *
+   * Il tiro non decide niente da solo: mette il totale accanto al VD e li
+   * lascia al tavolo, esattamente come la controscansione di Sentinel.
+   */
+  static async #onBdRiproduci() {
+    if (!this.puoScrivere) return;
+
+    const stato = statoBraindance(this.attore);
+    const libreria = bdArchivio(numeroDi(this.attore));
+    const shard = libreria.find(v => v.id === stato.shard) ?? libreria[0];
+    if (!shard) return;
+
+    const minuti = Math.max(1, Math.floor(Number(shard.durata) || 1));
+    const avanzato = await avanzaTempo(minuti * 60);
+
+    const accesi = BD_FILTRI.filter(c => stato.filtri[c])
+      .map(c => game.i18n.localize(`CPRX.BdFiltro${c.charAt(0).toUpperCase()}${c.slice(1)}`));
+
+    const righe = [
+      shard.testo || game.i18n.localize("CPRX.BdSenzaTesto"),
+      game.i18n.format("CPRX.BdSensi", {
+        sensi: accesi.length ? accesi.join(", ") : game.i18n.localize("CPRX.BdNessunSenso")
+      })
+    ];
+
+    const vd = vdBd(shard);
+    if (vd > 0) {
+      const abilita = (this.attore.items ?? []).find(i =>
+        /skill/i.test(i.type ?? "") && NOMI_RESISTERE.test(i.name ?? ""));
+      const livello = Number(abilita?.system?.level ?? 0) || 0;
+      const base = statistica(this.attore, abilita?.system?.stat ?? "will");
+
+      const tiro = await tiroCpr(base + livello);
+      righe.push(game.i18n.format("CPRX.BdProva", {
+        totale: tiro.totale, dado: tiro.dado, modificatore: tiro.modificatore, vd
+      }));
+      righe.push(game.i18n.localize(tiro.totale >= vd ? "CPRX.BdRetto" : "CPRX.BdCeduto"));
+    }
+
+    if (avanzato) righe.push(game.i18n.localize("CPRX.TempoAvanzato"));
+
+    await this.attore.setFlag(MODULO, "braindance", {
+      ...stato,
+      shard: shard.id,
+      visti: [...new Set([...stato.visti, shard.id])].slice(-100)
+    });
+
+    await annuncia(this.attore, APP_ACQUISTABILI.braindance.icona,
+      `${APP_ACQUISTABILI.braindance.nome} · ${shard.titolo}`, righe.join(" "));
+
+    this.render();
+  }
+
   /* --- Ziggurat Patch Pro ------------------------------------------- */
 
   static #onPatchScheda(event, target) {
@@ -8821,6 +9251,19 @@ class Agent extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
+  /**
+   * Un nome di strada suggerito. Riempie il campo e non salva niente: a
+   * salvare ci pensa il passo, come per quello che scrivi a mano. Per questo
+   * non ridisegna — un `render()` qui butterebbe via proprio il valore
+   * appena messo.
+   */
+  static #onSetupHandle(event, target) {
+    const campo = this.element.querySelector('[name="handle"]');
+    if (!campo) return;
+    campo.value = target.dataset.handle ?? "";
+    campo.focus();
+  }
+
   static async #onSetupAvanti() {
     const passo = SETUP_PASSI[this._setupPasso] ?? SETUP_PASSI[0];
 
@@ -8973,6 +9416,9 @@ class AgentMaster extends HandlebarsApplicationMixin(ApplicationV2) {
       corpAssegna: AgentMaster.#onCorpAssegna,
       corpSospendi: AgentMaster.#onCorpSospendi,
       corpApp: AgentMaster.#onCorpApp,
+      // Braindance: la libreria degli shard
+      bdSalva: AgentMaster.#onBdSalva,
+      bdElimina: AgentMaster.#onBdElimina,
       // Tempo, calendario e downtime
       tempoAvanza: AgentMaster.#onTempoAvanza,
       tempoMese: AgentMaster.#onTempoMese,
@@ -9082,6 +9528,7 @@ class AgentMaster extends HandlebarsApplicationMixin(ApplicationV2) {
     tempo: "console",
     stati: "console",
     corp: "corp",
+    braindance: "braindance",
     tavolo: "console"
   };
 
@@ -9105,6 +9552,8 @@ class AgentMaster extends HandlebarsApplicationMixin(ApplicationV2) {
           icona: "fa-solid fa-wand-magic-sparkles", attiva: scheda === "stati" },
         { chiave: "corp", etichetta: APP_ACQUISTABILI.corp.nome,
           icona: APP_ACQUISTABILI.corp.icona, attiva: scheda === "corp" },
+        { chiave: "braindance", etichetta: game.i18n.localize("CPRX.BdShard"),
+          icona: APP_ACQUISTABILI.braindance.icona, attiva: scheda === "braindance" },
         { chiave: "tavolo", etichetta: game.i18n.localize("CPRX.Tavolo"),
           icona: "fa-solid fa-users", attiva: scheda === "tavolo" }
       ]
@@ -9135,6 +9584,7 @@ class AgentMaster extends HandlebarsApplicationMixin(ApplicationV2) {
       case "tempo": return { ...base, ...this.#contestoTempo() };
       case "stati": return { ...base, ...this.#contestoStati() };
       case "corp": return { ...base, ...this.#contestoCorp() };
+      case "braindance": return { ...base, ...this.#contestoBraindance() };
       default: return { ...base, ...this.#contestoBanca() };
     }
   }
@@ -9347,6 +9797,75 @@ class AgentMaster extends HandlebarsApplicationMixin(ApplicationV2) {
           nome: game.i18n.localize("CPRX.CorpTutte"),
           scelta: (aperta.corp ?? "*") === "*"
         })
+      } : null
+    };
+  }
+
+  /**
+   * La libreria degli shard braindance. Quarto archivio condiviso, e vale la
+   * stessa regola degli altri tre: cosa c'e' dentro una registrazione lo
+   * scrive il master, e nell'App non c'e' un tasto per aggiungerne.
+   *
+   * Uno shard puo' girare per la citta' (`a: "*"`) oppure essere arrivato a
+   * un numero solo — la stessa forma dell'archivio aziendale, dove una voce
+   * con `corp: "*"` vale per chiunque abbia un badge.
+   *
+   * Il VD e' facoltativo: lasciato a zero vale quello del genere, e un BD
+   * nero aggiunto di fretta chiede comunque la prova.
+   */
+  #contestoBraindance() {
+    const voci = bdArchivio();
+    const aperta = this.stato.fascicolo
+      ? (this.stato.fascicolo === "nuovo" ? {} : voci.find(v => v.id === this.stato.fascicolo) ?? {})
+      : null;
+
+    // I numeri del tavolo, piu' «a chiunque» in cima: uno shard che gira per
+    // la citta' e' il caso normale, non l'eccezione.
+    const destinatari = [
+      { chiave: "*", nome: game.i18n.localize("CPRX.BdChiunque"), scelta: (aperta?.a ?? "*") === "*" }
+    ];
+    for (const attore of elencoGiocatori()) {
+      const numero = numeroDi(attore);
+      if (!numero) continue;
+      destinatari.push({
+        chiave: numero,
+        nome: `${identita(attore).handle} · ${numero}`,
+        scelta: aperta?.a === numero
+      });
+    }
+
+    const nomeA = (a) => a && a !== "*"
+      ? (identita(attorePerNumero(a)).handle || a)
+      : game.i18n.localize("CPRX.BdChiunque");
+
+    return {
+      vistaMasterBd: true,
+      vuoto: voci.length === 0,
+      voci: voci.map(v => ({
+        id: v.id,
+        titolo: v.titolo || "—",
+        // «VD 0» su una registrazione legale non e' un dato, e' rumore: la
+        // soglia si scrive solo quando c'e'.
+        riga: [game.i18n.localize(BD_GENERI[genereBd(v)].etichetta),
+               `${Math.max(1, Math.floor(Number(v.durata) || 1))}′`,
+               vdBd(v) ? `VD ${vdBd(v)}` : null,
+               nomeA(v.a), v.autore].filter(Boolean).join(" · ")
+      })),
+      scheda: aperta ? {
+        nuova: this.stato.fascicolo === "nuovo",
+        id: aperta.id ?? "",
+        titolo: aperta.titolo ?? "",
+        autore: aperta.autore ?? "",
+        meta: aperta.meta ?? "",
+        testo: aperta.testo ?? "",
+        durata: Math.max(1, Math.floor(Number(aperta.durata) || 5)),
+        vd: Number(aperta.vd) || 0,
+        generi: Object.entries(BD_GENERI).map(([chiave, def]) => ({
+          chiave,
+          etichetta: game.i18n.localize(def.etichetta),
+          scelto: chiave === genereBd(aperta)
+        })),
+        destinatari
       } : null
     };
   }
@@ -9860,6 +10379,49 @@ class AgentMaster extends HandlebarsApplicationMixin(ApplicationV2) {
   static async #onCorpAvvisoElimina(event, target) {
     const id = target.dataset.id;
     await scriviCorpArchivio(corpArchivio().filter(v => v.id !== id));
+    if (this.stato.fascicolo === id) this.stato.fascicolo = null;
+    this.render();
+  }
+
+  /* --- Braindance: la libreria degli shard --- */
+
+  static async #onBdSalva() {
+    const leggi = (nome) => (this.element.querySelector(`[name="${nome}"]`)?.value ?? "").trim();
+    const titolo = leggi("bdTitolo");
+    if (!titolo) {
+      ui.notifications.warn(game.i18n.localize("CPRX.CampoObbligatorio"));
+      return;
+    }
+
+    const dati = {
+      titolo,
+      autore: leggi("bdAutore"),
+      meta: leggi("bdMeta"),
+      testo: leggi("bdTesto"),
+      genere: BD_GENERI[leggi("bdGenere")] ? leggi("bdGenere") : "legale",
+      durata: Math.max(1, Math.floor(Number(leggi("bdDurata")) || 5)),
+      // Zero vuol dire «quello del genere»: `vdBd()` ci pensa, e un BD nero
+      // aggiunto senza toccare il campo chiede comunque la prova.
+      vd: Math.max(0, Math.floor(Number(leggi("bdVd")) || 0)),
+      a: leggi("bdDestinatario") || "*"
+    };
+
+    const voci = bdArchivio();
+    if (this.stato.fascicolo === "nuovo") {
+      voci.push({ id: foundry.utils.randomID(), quando: Date.now(), ...dati });
+    } else {
+      const indice = voci.findIndex(v => v.id === this.stato.fascicolo);
+      if (indice >= 0) voci[indice] = { ...voci[indice], ...dati };
+    }
+
+    await scriviBdArchivio(voci);
+    this.stato.fascicolo = null;
+    this.render();
+  }
+
+  static async #onBdElimina(event, target) {
+    const id = target.dataset.id;
+    await scriviBdArchivio(bdArchivio().filter(v => v.id !== id));
     if (this.stato.fascicolo === id) this.stato.fascicolo = null;
     this.render();
   }
@@ -10763,6 +11325,14 @@ Hooks.once("init", () => {
   // la stessa ragione: quello che dice una Corporazione non e' di nessun
   // personaggio.
   game.settings.register(MODULO, "corpArchivio", {
+    scope: "world", config: false, type: Array, default: [],
+    onChange: () => ridisegnaTutte()
+  });
+
+  // La libreria degli shard braindance. Quarto archivio condiviso: quello
+  // che c'e' dentro una registrazione lo decide il master, non il telefono
+  // di chi se la mette in testa.
+  game.settings.register(MODULO, "bdArchivio", {
     scope: "world", config: false, type: Array, default: [],
     onChange: () => ridisegnaTutte()
   });

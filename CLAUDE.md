@@ -27,7 +27,7 @@ module.json            manifest
 scripts/agent.js       tutto il codice: schema app, rete, meccaniche,
                        finestra, console del master, catalogo, hook
 templates/agent.hbs    template unico, un blocco {{#if}} per ogni vista
-templates/master.hbs   la console del master, nove schede
+templates/master.hbs   la console del master, dieci schede
 styles/agent.css       temi e presentazione
 lang/it.json           testi italiani
 lang/en.json           testi inglesi
@@ -101,14 +101,15 @@ contesto comune. E siccome non è dentro `.agent-schermo`, le regole
 dell'insegna non la raggiungono: `.agent-console-testata` se le rifà, senza i
 margini negativi che lì servono ad annullare il padding dello schermo.
 
-Nove linguette: banca, casellario NCPD, posta del numero libero, **Database
-Urbano**, **arena**, **tempo**, **effetti attivi**, **Corp Link** e rubrica del
-tavolo. NCPD, Ziggurat e l'archivio aziendale sono i tre archivi
-condivisi — impostazioni di mondo, scritte solo da qui, lette da chiunque
-abbia l'App. La scheda Corp Link governa **tutta** l'App: archivio, badge del
-tavolo e installazione, perché nel telefono di un giocatore non c'è niente
-di tutto questo. L'arena mostra chi ha un gladiatore collegato, come sta andando,
-e rimette in funzione un Agent bruciato senza far pagare niente.
+Dieci linguette: banca, casellario NCPD, posta del numero libero, **Database
+Urbano**, **arena**, **tempo**, **effetti attivi**, **Corp Link**, **libreria
+braindance** e rubrica del tavolo. NCPD, Ziggurat, l'archivio aziendale e la
+libreria degli shard sono i quattro archivi condivisi — impostazioni di
+mondo, scritte solo da qui, lette da chiunque abbia l'App. La scheda Corp Link
+governa **tutta** l'App: archivio, badge del tavolo e installazione, perché nel
+telefono di un giocatore non c'è niente di tutto questo. L'arena mostra chi ha
+un gladiatore collegato, come sta andando, e rimette in funzione un Agent
+bruciato senza far pagare niente.
 
 **Nessuno degli effetti delle App si spegne da solo in modo affidabile**, ed è
 il motivo per cui la scheda «effetti attivi» esiste. Il consulto MedScan muore
@@ -144,6 +145,16 @@ in mano.
 esiste già — Impostazioni e Casa — chiesto una volta invece che lasciato da
 cercare. I tasti dei temi e degli sfondi sono quelli veri (`scegliTema`,
 `sfondo`): scrivono subito, e il setup li mostra e basta.
+
+L'unica aggiunta sono i **sei nomi di strada** sotto il campo dell'handle
+(`HANDLE_SUGGERITI`, `handleSuggeriti()`), per chi al passo dell'identità
+resta a guardare un campo vuoto. Sono un elenco chiuso spedito col modulo,
+come gli sfondi, e non si traducono: un nome di strada è un nome proprio.
+Sono sempre gli stessi per quel personaggio — nascono dal suo
+identificativo, come il seriale — perché sei nomi che cambiano a ogni
+ridisegno sarebbero una slot machine, non un suggerimento. La pillola
+riempie il campo e **non ridisegna**: un `render()` lì butterebbe via il
+valore appena messo, e a salvare ci pensa il passo.
 
 Le due metà stanno in due posti diversi, e non è un dettaglio: il passo dove
 sei è `this._setupPasso`, sull'istanza come `_pagina`, e muore con la
@@ -250,6 +261,30 @@ nel contesto, non nel template.
 
 **La copertura vale anche qui:** il mittente passa da `#coperto()` come in
 ogni altra vista, e un numero coperto resta `???` anche in notifica.
+
+### La striscia
+
+Le notifiche del quadro lasciavano un buco: dentro un'App non c'era **niente**
+che dicesse che ti hanno scritto, e il quadro lo vedevi solo tornando
+indietro. La striscia (`.agent-banner`, `#contestoBanner()`) lo chiude —
+scende dall'alto, sta sopra allo schermo, e si vede in qualunque App.
+
+Mostra **una riga sola**, la più recente non letta. Non è un secondo elenco:
+un telefono che impila cinque strisce non fa leggere niente, e le altre stanno
+già nelle notifiche del quadro, che è il posto dove si guarda cos'è successo.
+
+Non sta in `base`, e non è una svista: si mette dopo il vetro di blocco, dove
+le quattro viste che coprono tutto lo schermo — guasto, chiamata, setup,
+blocco — sono già uscite. Il dock invece in `base` ci sta davvero, e per
+spegnerlo su quelle viste deve passare `dock: null`.
+
+Due regole ereditate: **il numero coperto resta `???`** (passa da
+`#coperto()` come ogni altra vista), e sul filo che stai già leggendo la
+striscia non compare — ti annuncerebbe una cosa che hai sotto gli occhi.
+
+Chiuderla (`this._bannerChiuso`, sull'istanza come `_pagina`) non segna
+niente per letto: il pallino nell'elenco resta e il quadro continua a portare
+la riga. È un gesto sulla finestra, e alla chiusura torna a zero.
 
 **Il quadro non scorre.** È una schermata, non una lista: `.agent-pagina.quadro`
 è `overflow: hidden` e l'elenco delle notifiche prende lo spazio che avanza
@@ -898,6 +933,7 @@ le variabili — non c'è una regola per ogni elemento di ogni App.
 | App Store | viola `#9b6cff` | BLACK CHROME |
 | Netwatch Sentinel | viola `#9b6cff` | NETWATCH · DIFESA DI RETE |
 | Patch Pro | verde `#6ee7a8` | ZIGGURAT · STUDIO CREATORI |
+| Braindance Player | viola `#b06cff` | ZETATECH · RIPRODUTTORE BD |
 | Console GM | rosso `#ff3b52` | NIGHT CITY CONTROL · GM |
 
 Le dieci App del DLC hanno le loro, e sono quelle del prototipo: Alex
@@ -979,6 +1015,7 @@ Tutto nei flag dell'attore, sotto `flags["cprx-agent"]`:
 | `calendario` | `{ avvisi }` — settimane e mesi passati, per le notifiche |
 | `setup` | `{ fatto, quando }` — la prima accensione è stata fatta |
 | `corp` | per chi lavori: Corporazione, livello del badge, sospensione |
+| `braindance` | shard scelto, filtri sensoriali, quali hai già guardato |
 
 Una voce di `contatti` porta anche `nascosto`: verso quella persona, e solo
 verso quella, il proprio numero esce coperto.
@@ -991,8 +1028,9 @@ Il `filo` è capato dall'impostazione `limiteFilo`, di serie 300 voci.
 
 Fuori dai flag stanno gli archivi che non appartengono a nessun personaggio:
 il casellario dell'NCPD (`ncpdSchedario`), il Database Urbano di Ziggurat, la
-archivio aziendale di Corp Link (`corpArchivio`), il calendario del tavolo
-(`calendario`) e la bacheca di Garden (`gardenPatch`).
+archivio aziendale di Corp Link (`corpArchivio`), la libreria degli shard
+braindance (`bdArchivio`), il calendario del tavolo (`calendario`) e la
+bacheca di Garden (`gardenPatch`).
 Sono impostazioni di mondo. Su tutte tranne una scrive solo il GM; su Garden scrive
 chiunque abbia l'App, ma non direttamente — il post passa dalla busta e lo
 deposita il postino, che è un GM.
@@ -1379,6 +1417,7 @@ anche le conseguenze.
 | MedScan | Uno specialista Trauma Team in linea. 100 E$ per un'ora: **+1 a Pronto Soccorso e Paramedico** per Stabilizzare o fare un Trattamento Rapido. 500 E$ per quattro ore: **+1 a Chirurgia o Tecnologia Medica**. Un abbonato **Trauma Team Executive** non paga. L'App dice a cosa serve il consulto, non solo quanto dura, e si può attivare sull'Agent di un altro. |
 | Ziggurat | Il **Database Urbano**: lo sportello unico della città, dai locali ai concerti ai servizi. Lo compila il master dalla console, chi ha l'App lo sfoglia per categoria e ci cerca dentro. Resta il tasto di consulto, che tira la prova di conoscenza della zona più il bonus della guida. |
 | StreetWire | Il tuo nome sulla strada: la REP della scheda, il livello del manuale, quanto lontano arriva il nome, e il registro di come ci sei arrivato — che è quello del sistema, non una copia. La muove il master dalla console, con un motivo scritto. |
+| Braindance Player | La libreria degli shard che ti sono arrivati, i cinque filtri sensoriali e il lettore. Riprodurre fa avanzare l'orologio del mondo della durata della registrazione (se a premere è un GM) e, se lo shard ha una soglia, tira **Resistere a Torture/Droghe** e mette il totale accanto al VD. Gli shard li scrive il master dalla console: da un telefono non si decide cosa c'è dentro un BD. |
 
 ### Le App del DLC «Tutto sugli Agent»
 
@@ -1420,10 +1459,10 @@ WatchBox e Brainwasher lasciano uno stato sulla scheda e quindi stanno in
 `#contestoStati()` della console, con il tasto per spegnerli. Big IAAA c'è
 anche lui ma **senza tasto**: è l'App comprata, come Ziggurat.
 
-### Le due App che il manuale non ha
+### Le App che il manuale non ha
 
 Vengono dal prototipo, non dal DLC. Non sono state inventate dal niente: per
-una le regole ci sono già, per l'altra c'era dove appoggiarsi.
+una le regole ci sono già, per le altre c'era dove appoggiarsi.
 
 **Netwatch Sentinel** (500 E$) è il giro dell'hacking del DLC visto dalla
 parte di chi lo subisce. Il manuale dice tutto: si hackera un Agent con un
@@ -1455,9 +1494,46 @@ sono: al loro posto ci sono i post e i cuori veri, e l'istogramma conta le
 pubblicazioni degli ultimi sette giorni con la colonna più alta come scala —
 senza, con due post la prima riempirebbe il grafico e sembrerebbe un record.
 
+**Braindance Player** (100 E$, Zetatech) è il riproduttore di shard. Il
+manuale non gli dà una scheda, ma una regola sui BD ce l'ha, ed è l'unica che
+serve: chi si mette in testa una registrazione grezza tira **Resistere a
+Torture/Droghe**. Da lì viene tutto il resto.
+
+Uno shard **non è un dato del telefono**: è la quarta impostazione di mondo,
+`bdArchivio`, e ci scrive solo il master dalla console. La ragione è la stessa
+del casellario NCPD — cosa c'è dentro una registrazione non lo decide chi la
+guarda. Una voce va «a chiunque» (`a: "*"`, la stessa forma di `corp: "*"`)
+oppure a un numero solo, e la libreria dell'App è l'archivio filtrato su
+quello.
+
+Il genere — legale, grezza, illegale — fa tre cose: la tinta della riga,
+l'avviso sotto il lettore e la **soglia di serie della prova**. Il campo VD
+sulla voce vince se il master l'ha scritto, e a zero vale quella del genere:
+un BD nero aggiunto di fretta chiede comunque il tiro. `vdBd()` è il posto
+unico dove sta questa regola.
+
+Riprodurre fa tre cose in fila: l'orologio del mondo avanza della durata **se
+a premere è un GM** (la solita regola di 4Tify e HusTool), si tira se c'è una
+soglia, e la carta in chat dice cosa hai visto. Il tiro non decide niente da
+solo — mette il totale accanto al VD, come la controscansione di Sentinel.
+
+**I cinque filtri sensoriali sono etichette, non meccaniche.** È la stessa
+scelta del tempo morto, e per la stessa ragione: quanto pesi sentire il
+dolore di chi ha registrato è una cosa che il manuale non quantifica, e
+inventare un modificatore qui voleva dire scriverlo al posto del master. I
+filtri stanno sul flag, finiscono nella carta in chat, e a quel punto è il
+tavolo a decidere. Nell'App non c'è **nessun** tasto di scrittura, e i tre
+tasti del prototipo cambiano shard: dentro una registrazione non c'è niente
+da mandare avanti.
+
+L'onda del lettore nasce dall'identificativo dello shard (`ondaBd()`): la
+stessa registrazione ha sempre la stessa forma. Un'onda casuale che cambia a
+ogni ridisegno si nota, ed è la stessa ragione per cui il seriale nasce
+dall'id dell'attore.
+
 ### Corp Link
 
-Il portale dipendenti, e la terza App che il manuale non ha: viene dal
+Il portale dipendenti, e una delle App che il manuale non ha: viene dal
 prototipo. Sta in `APP_ACQUISTABILI` come tutte le altre, perché la regola
 del tavolo è che di serie ci sono undici App e il resto si scarica — ma è
 l'unica con `soloMaster: true`.
@@ -1636,7 +1712,7 @@ lingua dimenticate. Handlebars non va installato, lo prende da Foundry.
 
 `verifica.cjs` compila **tutti e due** i template: `agent.hbs` e `master.hbs`.
 Aggiungendo una vista, aggiungi la sua voce lì dentro. Sono
-centodiciannove casi: tutte le viste dei due template, più le varianti che
+centoventisette casi: tutte le viste dei due template, più le varianti che
 accendono blocchi diversi — le tre pagine della home, blocco con e senza
 avvisi, banca piena e vuota, i messaggi con e senza il campo del numero
 nuovo aperto, conversazione coperta e scoperta, filo di
@@ -1659,6 +1735,13 @@ variante del Corporativo, che non sceglie dove vive), Corp Link senza badge e
 nelle sue quattro linguette, Casa con e senza lo sconto del Quartier
 Generale, e la scheda Corp Link della console — archivio in elenco e in
 modifica, badge assegnato e badge da assegnare.
+
+Dall'ultimo giro: il Braindance Player con la libreria piena, su un BD nero
+(dove compare il VD della prova) e a libreria vuota, la libreria degli shard
+della console in elenco, in modifica e vuota, e la striscia di notifica —
+scoperta e coperta. La striscia si rende **fuori** dalle viste, quindi il suo
+caso accende una vista qualsiasi e guarda solo la striscia: è lo stesso modo
+in cui si prova il dock.
 
 Tre chiavi in più su una voce, e non finiscono nel contesto: `_con` sono
 pezzi di marcatura che **devono** esserci (la classe di marca di ogni App

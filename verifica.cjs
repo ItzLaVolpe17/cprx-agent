@@ -57,9 +57,11 @@ const viste = {
   },
   vistaSetupIdentita: {
     vistaSetup: true, appCorrente: "setup", dock: null,
-    _con: ['data-action="setupIndietro"', 'name="handle"', "agent-setup-anteprima"],
+    _con: ['data-action="setupIndietro"', 'name="handle"', "agent-setup-anteprima",
+           'data-action="setupHandle"', 'data-handle="Ronin"'],
     setupIdentita: true, setupPrimo: false, setupUltimo: false,
     setupPunti: [{ chiave: "avvio", fatto: true }, { chiave: "identita", fatto: true }],
+    handleScelte: ["Ronin", "Static", "Vixen"],
     handle: "Zero", nomeVero: "Anna Vega", salutoHandle: true,
     salutoAnteprima: "Bentornato, Zero"
   },
@@ -885,6 +887,72 @@ const viste = {
     patchSchede: [], patchPost: 0, patchCuori: 0, patchBozze: 0,
     patchSettimana: [], patchElenco: [], patchVuoto: true
   },
+  /* Braindance: la libreria e' l'archivio condiviso, e nell'App non c'e' un
+     solo tasto di scrittura — come nell'NCPD. Il VD compare solo quando lo
+     shard ne ha uno. */
+  vistaBraindance: {
+    appCorrente: "braindance",
+    _con: ["app-braindance", 'data-action="bdRiproduci"', 'data-action="bdFiltro"',
+           'data-action="bdSalta"', 'data-action="bdScegli"', "agent-bd-onda"],
+    _senza: ['data-action="fascicoloNuovo"', 'data-action="bdSalva"', 'name="bdTitolo"'],
+    vistaBraindance: true, bdVuota: false, bdHaShard: true, bdPuoScrivere: true,
+    bdTitolo: "Notte all'Atlantis", bdAutore: "EZ-8 · CONCERTO",
+    bdMeta: "REGISTRAZIONE AUTORIZZATA", bdGenere: "Legale", bdGenereChiave: "legale",
+    bdIllegale: false, bdDurata: "4:00", bdOnda: [40, 72, 55], bdVd: 0,
+    bdAvviso: "Registrazione autorizzata.", bdVisto: true,
+    bdFiltri: [{ chiave: "vista", etichetta: "Vista", acceso: true },
+               { chiave: "emozioni", etichetta: "Emozioni", acceso: false }],
+    bdLibreria: [
+      { id: "1", titolo: "Notte all'Atlantis", autore: "EZ-8", meta: "Legale · 4′",
+        genere: "legale", corrente: true, visto: true }
+    ]
+  },
+  /* Uno shard con una soglia: la riga della prova c'e', e il filo rosso
+     della riga marca il BD nero. */
+  vistaBraindanceNero: {
+    appCorrente: "braindance", vistaBraindance: true,
+    _con: ["VD 15", "agent-bd-avviso illegale", "agent-punto"],
+    bdVuota: false, bdHaShard: true, bdPuoScrivere: true,
+    bdTitolo: "Ultimo respiro", bdAutore: "SCROLLER · BD NERO", bdMeta: "SNUFF",
+    bdGenere: "Illegale", bdGenereChiave: "illegale", bdIllegale: true,
+    bdDurata: "2:00", bdOnda: [30, 90], bdVd: 15,
+    bdAvviso: "BD nero: rischio di danno neurale permanente.", bdVisto: false,
+    bdFiltri: [{ chiave: "tatto", etichetta: "Tatto", acceso: true }],
+    bdLibreria: [
+      { id: "2", titolo: "Ultimo respiro", autore: "SCROLLER", meta: "Illegale · 2′",
+        genere: "illegale", corrente: true, visto: false }
+    ]
+  },
+  /* Libreria vuota: niente lettore, e la nota che dice chi mette in circolo
+     gli shard. Il tasto per riprodurre non deve comparire. */
+  vistaBraindanceVuota: {
+    appCorrente: "braindance", vistaBraindance: true,
+    _senza: ['data-action="bdRiproduci"', 'data-action="bdFiltro"'],
+    bdVuota: true, bdHaShard: false, bdPuoScrivere: true,
+    bdOnda: [], bdFiltri: [], bdLibreria: []
+  },
+  /* La striscia di notifica. Si rende fuori dalle viste, come il dock e la
+     barra di stato: qualunque contesto la accende, e il numero coperto qui
+     resta coperto come ovunque. */
+  vistaBanner: {
+    vistaFortify: true, bersaglio: "", marcatura: null,
+    _con: ['data-action="bannerApri"', 'data-action="bannerChiudi"',
+           'data-numero="555-0199"'],
+    banner: {
+      titolo: "Regina", testo: "Chiamami appena puoi.", app: "Messaggi",
+      icona: "fa-solid fa-comment-sms", genere: "sms",
+      numero: "555-0199", quando: 1700000000000
+    }
+  },
+  vistaBannerCoperto: {
+    vistaFortify: true, bersaglio: "", marcatura: null,
+    _vietato: ["555-0177"],
+    banner: {
+      titolo: "???", testo: "Chiamata persa", app: "Telefono",
+      icona: "fa-solid fa-phone-slash", genere: "persa",
+      numero: "", quando: 1700000000000
+    }
+  },
   vistaFortifySenza: { vistaFortify: true, bersaglio: "x", marcatura: null },
   // L'App NCPD non scrive piu': nessun tasto di scrittura, in nessun caso,
   // nemmeno per un GM. Si scheda dalla console del master.
@@ -1234,6 +1302,34 @@ const visteMaster = {
       corporazioni: [{ chiave: "*", nome: "Tutte le Corporazioni", scelta: false },
                      { chiave: "arasaka", nome: "Arasaka", scelta: true }]
     }
+  },
+  /* La libreria degli shard: si scrive solo da qui, come il casellario e il
+     Database Urbano. */
+  vistaMasterBd: {
+    schede: schede("braindance"), vuoto: false, scheda: null,
+    _con: ['data-action="fascicoloNuovo"', 'data-action="bdElimina"',
+           'data-action="fascicoloApri"'],
+    _senza: ['name="bdTitolo"'],
+    voci: [{ id: "1", titolo: "Ultimo respiro", riga: "Illegale · 2′ · VD 15 · A chiunque · SCROLLER" }]
+  },
+  vistaMasterBdModifica: {
+    vistaMasterBd: true, schede: schede("braindance"), vuoto: false, voci: [],
+    _con: ['name="bdTitolo"', 'name="bdAutore"', 'name="bdGenere"',
+           'name="bdDestinatario"', 'name="bdDurata"', 'name="bdVd"',
+           'name="bdMeta"', 'name="bdTesto"', 'data-action="bdSalva"'],
+    scheda: {
+      nuova: false, id: "1", titolo: "Ultimo respiro", autore: "SCROLLER · BD NERO",
+      meta: "SNUFF", testo: "L'ultimo minuto di un corriere.", durata: 2, vd: 15,
+      generi: [{ chiave: "legale", etichetta: "Legale", scelto: false },
+               { chiave: "illegale", etichetta: "Illegale", scelto: true }],
+      destinatari: [{ chiave: "*", nome: "A chiunque", scelta: false },
+                    { chiave: "555-0142", nome: "Zero · 555-0142", scelta: true }]
+    }
+  },
+  vistaMasterBdVuota: {
+    vistaMasterBd: true, schede: schede("braindance"), vuoto: true, voci: [], scheda: null,
+    _con: ['data-action="fascicoloNuovo"'],
+    _senza: ['data-action="bdElimina"']
   },
   vistaMasterArena: {
     schede: schede("arena"), vuoto: false, danno: "2d6",
