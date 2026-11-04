@@ -1,14 +1,18 @@
 # Pubblica una release installabile da Foundry.
-# Si spinge un tag vX.Y.Z uguale a "version" di module.json: il giro mette
-# insieme module.zip con i soli file che servono al modulo, riscrive il
-# "download" del manifest sulla versione del tag e allega tutti e due.
+# Parte quando cambia module.json (o a mano). Se la release v<version>
+# esiste già non fa niente: per pubblicarne una nuova basta alzare
+# "version" in module.json. Il giro crea il tag, mette insieme module.zip
+# con i soli file che servono al modulo, riscrive il "download" del
+# manifest sulla versione e allega tutti e due.
 # Il link da incollare in Foundry resta sempre lo stesso:
 #   https://github.com/ItzLaVolpe17/cprx-agent/releases/latest/download/module.json
 name: Release
 
 on:
   push:
-    tags: ["v*"]
+    branches: ["main", "claude/**"]
+    paths: ["module.json"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,39 +20,45 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Controlla che tag e versione coincidano
+      - name: Versione
+        id: v
         run: |
-          VERSIONE=$(jq -r .version module.json)
-          if [ "v$VERSIONE" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::Il tag $GITHUB_REF_NAME non corrisponde a version $VERSIONE in module.json"
-            exit 1
+          TAG="v$(jq -r .version module.json)"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "La release $TAG esiste già: niente da fare."
+            echo "esiste=1" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Verifiche
+        if: steps.v.outputs.esiste != '1'
         run: |
           node --check scripts/agent.js
           python3 -c "import json; [json.load(open(f)) for f in ['module.json','lang/it.json','lang/en.json']]"
 
-      - name: Manifest della release
+      - name: Manifest e pacchetto
+        if: steps.v.outputs.esiste != '1'
         run: |
           URL="https://github.com/${GITHUB_REPOSITORY}"
-          jq --arg url "$URL" --arg tag "$GITHUB_REF_NAME" '
+          TAG="${{ steps.v.outputs.tag }}"
+          jq --arg url "$URL" --arg tag "$TAG" '
             .url = $url |
             .manifest = ($url + "/releases/latest/download/module.json") |
             .download = ($url + "/releases/download/" + $tag + "/module.zip")
           ' module.json > module.release.json
           mv module.release.json module.json
+          zip -r module.zip module.json scripts templates styles lang assets README.md
 
-      - name: Pacchetto
-        run: zip -r module.zip module.json scripts templates styles lang assets README.md
-
-      - uses: softprops/action-gh-release@v2
-        with:
-          name: ${{ github.ref_name }}
-          generate_release_notes: true
-          files: |
-            module.json
-            module.zip
+      - name: Release
+        if: steps.v.outputs.esiste != '1'
+        run: |
+          gh release create "${{ steps.v.outputs.tag }}" module.json module.zip \
+            --target "$GITHUB_SHA" \
+            --title "${{ steps.v.outputs.tag }}" \
+            --generate-notes \
+            --latest
