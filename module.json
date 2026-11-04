@@ -42,6 +42,7 @@
   ],
   "socket": false,
   "url": "https://github.com/ItzLaVolpe17/cprx-agent",
+  "bugs": "https://github.com/ItzLaVolpe17/cprx-agent/issues",
   "manifest": "https://github.com/ItzLaVolpe17/cprx-agent/releases/latest/download/module.json",
   "download": "https://github.com/ItzLaVolpe17/cprx-agent/releases/download/v0.9.3/module.zip"
 }
