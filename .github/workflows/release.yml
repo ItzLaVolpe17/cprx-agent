@@ -1,0 +1,54 @@
+# Pubblica una release installabile da Foundry.
+# Si spinge un tag vX.Y.Z uguale a "version" di module.json: il giro mette
+# insieme module.zip con i soli file che servono al modulo, riscrive il
+# "download" del manifest sulla versione del tag e allega tutti e due.
+# Il link da incollare in Foundry resta sempre lo stesso:
+#   https://github.com/ItzLaVolpe17/cprx-agent/releases/latest/download/module.json
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Controlla che tag e versione coincidano
+        run: |
+          VERSIONE=$(jq -r .version module.json)
+          if [ "v$VERSIONE" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Il tag $GITHUB_REF_NAME non corrisponde a version $VERSIONE in module.json"
+            exit 1
+          fi
+
+      - name: Verifiche
+        run: |
+          node --check scripts/agent.js
+          python3 -c "import json; [json.load(open(f)) for f in ['module.json','lang/it.json','lang/en.json']]"
+
+      - name: Manifest della release
+        run: |
+          URL="https://github.com/${GITHUB_REPOSITORY}"
+          jq --arg url "$URL" --arg tag "$GITHUB_REF_NAME" '
+            .url = $url |
+            .manifest = ($url + "/releases/latest/download/module.json") |
+            .download = ($url + "/releases/download/" + $tag + "/module.zip")
+          ' module.json > module.release.json
+          mv module.release.json module.json
+
+      - name: Pacchetto
+        run: zip -r module.zip module.json scripts templates styles lang assets README.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            module.json
+            module.zip
